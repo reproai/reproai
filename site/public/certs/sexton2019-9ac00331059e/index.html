@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ReproAI certificate — Sexton2019</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<style>
+  :root { --ink:#0f172a; --soft:#475569; --faint:#64748b; --line:#dce5ee;
+          --bg:#fbfcfe; --paper:#fff; --tier:#15803d;
+          --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+          --sans:"Inter",-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans); line-height:1.55; }
+  a { color:#c8202f; text-decoration:none; } a:hover { text-decoration:underline; }
+  .wrap { max-width:880px; margin:0 auto; padding:0 20px 60px; }
+  header.site { border-bottom:1px solid var(--line); background:var(--paper); padding:14px 0; margin-bottom:30px; }
+  header.site .wrap { padding-bottom:0; display:flex; justify-content:space-between; }
+  .brand { font-weight:800; } .brand .accent { color:#c8202f; }
+  .hero { display:flex; gap:28px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
+  .hero h1 { margin:0 0 6px; font-size:1.6rem; letter-spacing:-0.02em; }
+  .tierline { color:var(--tier); font-weight:700; }
+  /* full-width summary card — spans the content column, no narrow cap that empties the right */
+  .summary-card { background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:18px 22px; margin:16px 0 4px; }
+  .summary-card .statusline { color:var(--tier); font-weight:700; font-size:1.02rem; margin:0 0 10px; }
+  .summary-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:6px 22px; font-size:0.9rem; margin-bottom:12px; }
+  .summary-grid .k { color:var(--faint); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; display:block; }
+  .summary-grid .v { color:var(--ink); }
+  .summary-card .caveat { margin:0; font-size:0.92rem; }
+  .summary-card .caveat .pos { color:var(--soft); }
+  .summary-card .caveat .bound { color:var(--ink); font-weight:600; }
+  .summary-card .ladder { margin-top:8px; }
+  .summary-card .ladder summary { color:var(--soft); font-size:0.86rem; }
+  .summary-card .ladder p { font-size:0.88rem; color:var(--soft); margin:6px 0 0; }
+  .digest { font-family:var(--mono); font-size:0.78rem; color:var(--faint); word-break:break-all; }
+  section { background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:18px 22px; margin:18px 0; }
+  section h2 { font-size:1.05rem; margin:0 0 10px; }
+  section h2 .num { color:var(--tier); }
+  pre { background:#0f172a; color:#e2e8f0; font-family:var(--mono); font-size:0.78rem; padding:12px 14px; border-radius:8px; overflow-x:auto; }
+  ul { margin:8px 0; padding-left:22px; font-size:0.85rem; } li { font-family:var(--mono); }
+  details summary { cursor:pointer; font-size:0.9rem; margin:6px 0; }
+  .kv { display:grid; grid-template-columns:170px 1fr; gap:4px 14px; font-size:0.88rem; }
+  .kv .k { color:var(--faint); } .kv .v { font-family:var(--mono); font-size:0.83rem; word-break:break-all; }
+  footer { color:var(--faint); font-size:0.82rem; margin-top:30px; }
+</style>
+</head>
+<body>
+<header class="site"><div class="wrap">
+  <div class="brand"><a href="/" style="color:inherit">Repro<span class="accent">AI</span></a> · certificate</div>
+  <div><a href="../">← all certificates</a></div>
+</div></header>
+<main class="wrap">
+  <div class="hero">
+    <img src="./seal_clean.svg" width="190" height="190" alt="ReproAI seal — reproducible run, outputs match exactly (level T0)"/>
+    <div>
+      <h1>How Government Reactions to Violence Worsen Social Welfare: Evidence from Peru</h1>
+      <div style="color:var(--soft);font-size:0.95rem;margin-bottom:4px">Renard Sexton, Rachel L. Wellhausen &amp; Michael G. Findley · American Journal of Political Science 2019</div>
+      <div class="tierline">Reproducible run · outputs match exactly (level T0)</div>
+      <div class="digest" title="replication package id">package: Sexton2019</div>
+    </div>
+  </div>
+
+  <div class="summary-card">
+    <p class="statusline">Verified outputs · this run reproduces exactly</p>
+    <div class="summary-grid">
+      <div><span class="k">Paper</span><span class="v">How Government Reactions to Violence Worsen Social Welfare: Evidence from Peru</span></div>
+      <div><span class="k">Certified outputs</span><span class="v">110 output files reproduced</span></div>
+      <div><span class="k">Reproducibility level</span><span class="v">T0 — exact-file match (every re-run produced byte-for-byte identical output files)</span></div>
+    </div>
+    <p class="caveat">
+      <span class="pos">This certificate checks that the listed output files can be regenerated from this exact code, data, and computing environment.</span>
+      <span class="bound"> It does not judge whether the paper's conclusions are correct — reproducible is not the same as correct.</span>
+    </p>
+    <details class="ladder">
+      <summary>What "level T0" means</summary>
+      <p>Reproducibility level: T0 means the outputs reproduce exactly, byte-for-byte. (Lower levels — T1, T2 — allow small numeric or formatting differences.) This is a determinism level, not a quality grade.</p>
+    </details>
+  </div>
+
+  <section>
+    <h2><span class="num">①</span> The replication package</h2>
+    <p style="font-size:0.9rem">The exact code, data, and environment this run was regenerated from — 49 file(s):</p>
+    <details><summary>browse the package files</summary>
+    <ul>
+      <li><a href="./closed_package/0_SWF_replication.do">closed_package/0_SWF_replication.do</a></li>
+      <li><a href="./closed_package/Appendix_table10.tex">closed_package/Appendix_table10.tex</a></li>
+      <li><a href="./closed_package/Appendix_table13.tex">closed_package/Appendix_table13.tex</a></li>
+      <li><a href="./closed_package/Appendix_table14.tex">closed_package/Appendix_table14.tex</a></li>
+      <li><a href="./closed_package/Appendix_table15.tex">closed_package/Appendix_table15.tex</a></li>
+      <li><a href="./closed_package/Appendix_table16.tex">closed_package/Appendix_table16.tex</a></li>
+      <li><a href="./closed_package/Appendix_table17.tex">closed_package/Appendix_table17.tex</a></li>
+      <li><a href="./closed_package/Appendix_table18.tex">closed_package/Appendix_table18.tex</a></li>
+      <li><a href="./closed_package/Appendix_table19.tex">closed_package/Appendix_table19.tex</a></li>
+      <li><a href="./closed_package/Appendix_table2.tex">closed_package/Appendix_table2.tex</a></li>
+      <li><a href="./closed_package/Appendix_table4.tex">closed_package/Appendix_table4.tex</a></li>
+      <li><a href="./closed_package/Appendix_table5.tex">closed_package/Appendix_table5.tex</a></li>
+      <li><a href="./closed_package/Appendix_table6.tex">closed_package/Appendix_table6.tex</a></li>
+      <li><a href="./closed_package/Appendix_table7.tex">closed_package/Appendix_table7.tex</a></li>
+      <li><a href="./closed_package/Appendix_table8.tex">closed_package/Appendix_table8.tex</a></li>
+      <li><a href="./closed_package/Appendix_table9.tex">closed_package/Appendix_table9.tex</a></li>
+      <li><a href="./closed_package/CODEBOOK.pdf">closed_package/CODEBOOK.pdf</a></li>
+      <li><a href="./closed_package/SWF-NPC-implmentation.R">closed_package/SWF-NPC-implmentation.R</a></li>
+      <li><a href="./closed_package/analysis_data_spec_18.csv">closed_package/analysis_data_spec_18.csv</a></li>
+      <li><a href="./closed_package/analysis_data_spec_19.csv">closed_package/analysis_data_spec_19.csv</a></li>
+      <li><a href="./closed_package/analysis_data_spec_20.csv">closed_package/analysis_data_spec_20.csv</a></li>
+      <li><a href="./closed_package/analysis_data_spec_3.csv">closed_package/analysis_data_spec_3.csv</a></li>
+      <li><a href="./closed_package/analysis_data_spec_4.csv">closed_package/analysis_data_spec_4.csv</a></li>
+      <li><a href="./closed_package/attacks_list.dta">closed_package/attacks_list.dta</a></li>
+      <li><a href="./closed_package/attacks_list.tab">closed_package/attacks_list.tab</a></li>
+      <li><a href="./closed_package/brl.ado">closed_package/brl.ado</a></li>
+      <li><a href="./closed_package/brl.hlp">closed_package/brl.hlp</a></li>
+      <li><a href="./closed_package/brl.pkg">closed_package/brl.pkg</a></li>
+      <li><a href="./closed_package/debate_attacks.dta">closed_package/debate_attacks.dta</a></li>
+      <li><a href="./closed_package/debate_attacks.tab">closed_package/debate_attacks.tab</a></li>
+      <li><a href="./closed_package/events_month.pdf">closed_package/events_month.pdf</a></li>
+      <li><a href="./closed_package/hurdle.dta">closed_package/hurdle.dta</a></li>
+      <li><a href="./closed_package/hurdle.tab">closed_package/hurdle.tab</a></li>
+      <li><a href="./closed_package/hurdle1.pdf">closed_package/hurdle1.pdf</a></li>
+      <li><a href="./closed_package/peru_swf_append.pdf">closed_package/peru_swf_append.pdf</a></li>
+      <li><a href="./closed_package/readme.txt">closed_package/readme.txt</a></li>
+      <li><a href="./closed_package/regout_capture.log">closed_package/regout_capture.log</a></li>
+      <li><a href="./closed_package/reproai_closure/capsule.json">closed_package/reproai_closure/capsule.json</a></li>
+      <li><a href="./closed_package/reproai_closure/closure_report.json">closed_package/reproai_closure/closure_report.json</a></li>
+      <li><a href="./closed_package/swf-peru-ajps.dta">closed_package/swf-peru-ajps.dta</a></li>
+      <li><a href="./closed_package/swf-peru-ajps.tab">closed_package/swf-peru-ajps.tab</a></li>
+      <li><a href="./closed_package/swf-peru-ajps_forR.dta">closed_package/swf-peru-ajps_forR.dta</a></li>
+      <li><a href="./closed_package/swf-peru-ajps_forR.tab">closed_package/swf-peru-ajps_forR.tab</a></li>
+      <li><a href="./closed_package/table1.tex">closed_package/table1.tex</a></li>
+      <li><a href="./closed_package/table2.tex">closed_package/table2.tex</a></li>
+      <li><a href="./closed_package/table3.tex">closed_package/table3.tex</a></li>
+      <li><a href="./closed_package/table4.tex">closed_package/table4.tex</a></li>
+      <li><a href="./closed_package/table5.tex">closed_package/table5.tex</a></li>
+      <li><a href="./closed_package/table6.tex">closed_package/table6.tex</a></li>
+    </ul>
+    </details>
+  </section>
+
+  <section>
+    <h2><span class="num">②</span> How this certificate is verified</h2>
+    <div class="kv">
+      <span class="k">certificate files</span><span class="v"><a href="./certificate.json">certificate.json</a> · <a href="./trace.json">trace.json</a> · <a href="./deposit.json">deposit.json</a></span>
+      <span class="k">public timestamp</span><span class="v" style="font-family:var(--sans)">Bound to a public timestamp issued after the code and data were locked, so the result could not have been prepared in advance.</span>
+      <span class="k">signature</span><span class="v" style="font-family:var(--sans)">Digitally signed by the author.</span>
+      <span class="k">deposited</span><span class="v">2026-07-08T06:24:42+00:00</span>
+    </div>
+    <p style="font-size:0.9rem;margin:12px 0 6px">This certificate is also recorded in a public tamper-evident log, so the record cannot be altered after the fact.</p>
+    <details>
+      <summary>Technical details for verifiers</summary>
+      <div class="kv" style="margin-top:8px">
+        <span class="k">certificate id</span><span class="v">sexton2019-9ac00331059e</span>
+        <span class="k">package fingerprint</span><span class="v">9ac00331059ee6f70fcccdf8cd33027cd3b1246382c994eff9916196b3eb78d4</span>
+        <span class="k">public timestamp</span><span class="v" style="font-family:var(--sans)">public-randomness round 30229481</span>
+      </div>
+      <p style="font-size:0.9rem;margin:12px 0 6px">Re-check it yourself (for verifiers) — download this directory, then:</p>
+      <pre>pip install &quot;git+https://github.com/reproai/reproai#subdirectory=core&quot;
+reproai verify-cert ./sexton2019-9ac00331059e ./sexton2019-9ac00331059e/closed_package --sample 1</pre>
+    </details>
+  </section>
+
+  <section>
+    <h2><span class="num">③</span> What the run produced</h2>
+      <details><summary><strong>83 data files</strong></summary>
+    <ul>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_10.csv">results/data/analysis_data_cmd_0_SWF_replication_10.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_11.csv">results/data/analysis_data_cmd_0_SWF_replication_11.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_12.csv">results/data/analysis_data_cmd_0_SWF_replication_12.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_13_i1.csv">results/data/analysis_data_cmd_0_SWF_replication_13_i1.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_13_i2.csv">results/data/analysis_data_cmd_0_SWF_replication_13_i2.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_14.csv">results/data/analysis_data_cmd_0_SWF_replication_14.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_15.csv">results/data/analysis_data_cmd_0_SWF_replication_15.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_16.csv">results/data/analysis_data_cmd_0_SWF_replication_16.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_17.csv">results/data/analysis_data_cmd_0_SWF_replication_17.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_18.csv">results/data/analysis_data_cmd_0_SWF_replication_18.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_19.csv">results/data/analysis_data_cmd_0_SWF_replication_19.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_1_i1.csv">results/data/analysis_data_cmd_0_SWF_replication_1_i1.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_1_i2.csv">results/data/analysis_data_cmd_0_SWF_replication_1_i2.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_1_i3.csv">results/data/analysis_data_cmd_0_SWF_replication_1_i3.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_1_i4.csv">results/data/analysis_data_cmd_0_SWF_replication_1_i4.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_20.csv">results/data/analysis_data_cmd_0_SWF_replication_20.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_21.csv">results/data/analysis_data_cmd_0_SWF_replication_21.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_22.csv">results/data/analysis_data_cmd_0_SWF_replication_22.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_23.csv">results/data/analysis_data_cmd_0_SWF_replication_23.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_24.csv">results/data/analysis_data_cmd_0_SWF_replication_24.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_25.csv">results/data/analysis_data_cmd_0_SWF_replication_25.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_26.csv">results/data/analysis_data_cmd_0_SWF_replication_26.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_27.csv">results/data/analysis_data_cmd_0_SWF_replication_27.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_28.csv">results/data/analysis_data_cmd_0_SWF_replication_28.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_29.csv">results/data/analysis_data_cmd_0_SWF_replication_29.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_2_i1.csv">results/data/analysis_data_cmd_0_SWF_replication_2_i1.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_2_i2.csv">results/data/analysis_data_cmd_0_SWF_replication_2_i2.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_3.csv">results/data/analysis_data_cmd_0_SWF_replication_3.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_30.csv">results/data/analysis_data_cmd_0_SWF_replication_30.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_31.csv">results/data/analysis_data_cmd_0_SWF_replication_31.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_32.csv">results/data/analysis_data_cmd_0_SWF_replication_32.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_33.csv">results/data/analysis_data_cmd_0_SWF_replication_33.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_34.csv">results/data/analysis_data_cmd_0_SWF_replication_34.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_35.csv">results/data/analysis_data_cmd_0_SWF_replication_35.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_36.csv">results/data/analysis_data_cmd_0_SWF_replication_36.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_37_i1.csv">results/data/analysis_data_cmd_0_SWF_replication_37_i1.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_37_i2.csv">results/data/analysis_data_cmd_0_SWF_replication_37_i2.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_37_i3.csv">results/data/analysis_data_cmd_0_SWF_replication_37_i3.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_37_i4.csv">results/data/analysis_data_cmd_0_SWF_replication_37_i4.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_37_i5.csv">results/data/analysis_data_cmd_0_SWF_replication_37_i5.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_38.csv">results/data/analysis_data_cmd_0_SWF_replication_38.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_39.csv">results/data/analysis_data_cmd_0_SWF_replication_39.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_4.csv">results/data/analysis_data_cmd_0_SWF_replication_4.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_40.csv">results/data/analysis_data_cmd_0_SWF_replication_40.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_41.csv">results/data/analysis_data_cmd_0_SWF_replication_41.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_42.csv">results/data/analysis_data_cmd_0_SWF_replication_42.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_43.csv">results/data/analysis_data_cmd_0_SWF_replication_43.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_44.csv">results/data/analysis_data_cmd_0_SWF_replication_44.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_45.csv">results/data/analysis_data_cmd_0_SWF_replication_45.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_46.csv">results/data/analysis_data_cmd_0_SWF_replication_46.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_47.csv">results/data/analysis_data_cmd_0_SWF_replication_47.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_48.csv">results/data/analysis_data_cmd_0_SWF_replication_48.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_49.csv">results/data/analysis_data_cmd_0_SWF_replication_49.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_5.csv">results/data/analysis_data_cmd_0_SWF_replication_5.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_50.csv">results/data/analysis_data_cmd_0_SWF_replication_50.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_51.csv">results/data/analysis_data_cmd_0_SWF_replication_51.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_52.csv">results/data/analysis_data_cmd_0_SWF_replication_52.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_53.csv">results/data/analysis_data_cmd_0_SWF_replication_53.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_54.csv">results/data/analysis_data_cmd_0_SWF_replication_54.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_55.csv">results/data/analysis_data_cmd_0_SWF_replication_55.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_56.csv">results/data/analysis_data_cmd_0_SWF_replication_56.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_57.csv">results/data/analysis_data_cmd_0_SWF_replication_57.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_58_i1.csv">results/data/analysis_data_cmd_0_SWF_replication_58_i1.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_58_i2.csv">results/data/analysis_data_cmd_0_SWF_replication_58_i2.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_58_i3.csv">results/data/analysis_data_cmd_0_SWF_replication_58_i3.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_58_i4.csv">results/data/analysis_data_cmd_0_SWF_replication_58_i4.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_59.csv">results/data/analysis_data_cmd_0_SWF_replication_59.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_6.csv">results/data/analysis_data_cmd_0_SWF_replication_6.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_60.csv">results/data/analysis_data_cmd_0_SWF_replication_60.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_7_i1.csv">results/data/analysis_data_cmd_0_SWF_replication_7_i1.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_7_i2.csv">results/data/analysis_data_cmd_0_SWF_replication_7_i2.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_7_i3.csv">results/data/analysis_data_cmd_0_SWF_replication_7_i3.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_7_i4.csv">results/data/analysis_data_cmd_0_SWF_replication_7_i4.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_8_i1.csv">results/data/analysis_data_cmd_0_SWF_replication_8_i1.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_8_i2.csv">results/data/analysis_data_cmd_0_SWF_replication_8_i2.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_8_i3.csv">results/data/analysis_data_cmd_0_SWF_replication_8_i3.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_8_i4.csv">results/data/analysis_data_cmd_0_SWF_replication_8_i4.csv</a></li>
+      <li><a href="./results/data/analysis_data_cmd_0_SWF_replication_9.csv">results/data/analysis_data_cmd_0_SWF_replication_9.csv</a></li>
+      <li><a href="./results/data/analysis_data_spec_18.csv">results/data/analysis_data_spec_18.csv</a></li>
+      <li><a href="./results/data/analysis_data_spec_19.csv">results/data/analysis_data_spec_19.csv</a></li>
+      <li><a href="./results/data/analysis_data_spec_20.csv">results/data/analysis_data_spec_20.csv</a></li>
+      <li><a href="./results/data/analysis_data_spec_3.csv">results/data/analysis_data_spec_3.csv</a></li>
+      <li><a href="./results/data/analysis_data_spec_4.csv">results/data/analysis_data_spec_4.csv</a></li>
+    </ul>
+      </details>
+      <details><summary><strong>5 figure files</strong></summary>
+    <ul>
+      <li><a href="./results/figure/events_month.pdf">results/figure/events_month.pdf</a></li>
+      <li><a href="./results/figure/hurdle1.pdf">results/figure/hurdle1.pdf</a></li>
+      <li><a href="./results/figure/reproai_results/figures/fig_0_SWF_replication_1.pdf">results/figure/reproai_results/figures/fig_0_SWF_replication_1.pdf</a></li>
+      <li><a href="./results/figure/reproai_results/figures/fig_0_SWF_replication_2.pdf">results/figure/reproai_results/figures/fig_0_SWF_replication_2.pdf</a></li>
+      <li><a href="./results/figure/reproai_results/figures/named_0_SWF_replication_Graph.pdf">results/figure/reproai_results/figures/named_0_SWF_replication_Graph.pdf</a></li>
+    </ul>
+      </details>
+      <details><summary><strong>110 regression results captured from the run</strong></summary>
+    <ul>
+      <li><a href="./results/regression_records/reproai_results/regressions.jsonl">results/regression_records/reproai_results/regressions.jsonl</a></li>
+    </ul>
+      </details>
+      <details><summary><strong>21 table files</strong></summary>
+    <ul>
+      <li><a href="./results/table/Appendix_table10.tex">results/table/Appendix_table10.tex</a></li>
+      <li><a href="./results/table/Appendix_table13.tex">results/table/Appendix_table13.tex</a></li>
+      <li><a href="./results/table/Appendix_table14.tex">results/table/Appendix_table14.tex</a></li>
+      <li><a href="./results/table/Appendix_table15.tex">results/table/Appendix_table15.tex</a></li>
+      <li><a href="./results/table/Appendix_table16.tex">results/table/Appendix_table16.tex</a></li>
+      <li><a href="./results/table/Appendix_table17.tex">results/table/Appendix_table17.tex</a></li>
+      <li><a href="./results/table/Appendix_table18.tex">results/table/Appendix_table18.tex</a></li>
+      <li><a href="./results/table/Appendix_table19.tex">results/table/Appendix_table19.tex</a></li>
+      <li><a href="./results/table/Appendix_table2.tex">results/table/Appendix_table2.tex</a></li>
+      <li><a href="./results/table/Appendix_table4.tex">results/table/Appendix_table4.tex</a></li>
+      <li><a href="./results/table/Appendix_table5.tex">results/table/Appendix_table5.tex</a></li>
+      <li><a href="./results/table/Appendix_table6.tex">results/table/Appendix_table6.tex</a></li>
+      <li><a href="./results/table/Appendix_table7.tex">results/table/Appendix_table7.tex</a></li>
+      <li><a href="./results/table/Appendix_table8.tex">results/table/Appendix_table8.tex</a></li>
+      <li><a href="./results/table/Appendix_table9.tex">results/table/Appendix_table9.tex</a></li>
+      <li><a href="./results/table/table1.tex">results/table/table1.tex</a></li>
+      <li><a href="./results/table/table2.tex">results/table/table2.tex</a></li>
+      <li><a href="./results/table/table3.tex">results/table/table3.tex</a></li>
+      <li><a href="./results/table/table4.tex">results/table/table4.tex</a></li>
+      <li><a href="./results/table/table5.tex">results/table/table5.tex</a></li>
+      <li><a href="./results/table/table6.tex">results/table/table6.tex</a></li>
+    </ul>
+      </details>
+  </section>
+
+  <section>
+    <h2>Stamp your package</h2>
+    <p style="font-size:0.9rem"><img src="./badge.svg" alt="badge preview" style="vertical-align:middle"/> — paste into your README:</p>
+    <pre>[![ReproAI certified T0](https://reproai.org/certs/sexton2019-9ac00331059e/badge.svg)](https://reproai.org/certs/sexton2019-9ac00331059e/)</pre>
+  </section>
+
+  <footer>This certificate asserts that these output files were produced by this code and data, in this environment, in a run bound to a public timestamp. It does not judge whether the paper's conclusions are correct. · Registry entry generated deterministically from the deposited certificate.</footer>
+</main>
+</body>
+</html>

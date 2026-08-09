@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="153" height="20" role="img" aria-label="reproai: certified T0">
+  <title>reproai: certified T0 — certificate sexton2019-9ac00331059e</title>
+  <clipPath id="r"><rect width="153" height="20" rx="3" fill="#fff"/></clipPath>
+  <g clip-path="url(#r)">
+    <rect width="59" height="20" fill="#2b3440"/>
+    <rect x="59" width="94" height="20" fill="#15803d"/>
+  </g>
+  <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11">
+    <text x="29.5" y="14">reproai</text>
+    <text x="106.0" y="14" font-weight="bold">certified T0</text>
+  </g>
+</svg>

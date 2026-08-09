@@ -1,0 +1,26 @@
+{
+\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}
+\begin{tabular}{l*{6}{c}}
+\hline\hline
+                                                  &\multicolumn{1}{c}{(1)}&\multicolumn{1}{c}{(2)}&\multicolumn{1}{c}{(3)}&\multicolumn{1}{c}{(4)}&\multicolumn{1}{c}{(5)}&\multicolumn{1}{c}{(6)}\\
+                                                  &\multicolumn{1}{c}{Combined social services budget share (percent)}&\multicolumn{1}{c}{Combined social services spending share (percent)}&\multicolumn{1}{c}{Health budget share (percent)}&\multicolumn{1}{c}{Health spending share (percent)}&\multicolumn{1}{c}{Defense budget share (percent)}&\multicolumn{1}{c}{Defense spending share (percent)}\\
+                                                  &        b/se   &        b/se   &        b/se   &        b/se   &        b/se   &        b/se   \\
+\hline
+L.Number of soldiers killed by insurgents during  &        -.26*  &        -.32***&        -.18** &        -.20** &         .10*  &         .11*  \\
+budget period                                     &       (.11)   &       (.08)   &       (.06)   &       (.06)   &       (.05)   &       (.05)   \\
+L.Dummy for soldiers killed by insurgents during  &        -.32   &        -.24   &        -.81   &       -1.07   &       -1.24   &       -1.25   \\
+pre-budget period                                 &      (1.46)   &      (1.38)   &      (1.17)   &      (1.15)   &       (.75)   &       (.72)   \\
+L.Number of soldiers killed by insurgents during  &         .19   &         .21   &         .39*  &         .41*  &        -.20   &        -.20   \\
+budget period $\times$ L.Dummy for soldiers killed by insurgents during pre-budget period&       (.33)   &       (.29)   &       (.14)   &       (.16)   &       (.11)   &       (.11)   \\
+GDP per capita (log transformed)                  &       -3.39   &       -1.75   &        6.81   &        7.99   &       -4.56   &       -4.27   \\
+                                                  &     (11.03)   &      (9.84)   &      (9.25)   &      (8.74)   &      (7.14)   &      (6.83)   \\
+Department Government Budget Execution (excluding &       -6.12   &         .88   &       -2.12   &       -2.32   &               &               \\
+health)                                           &     (13.27)   &      (7.25)   &      (6.71)   &      (6.71)   &               &               \\
+Department Government Budget Execution (excluding &               &               &               &               &       -3.69   &       -3.72   \\
+defense)                                          &               &               &               &               &      (7.74)   &      (7.56)   \\
+\hline
+N                                                 &          96   &          96   &          96   &          96   &          96   &          96   \\
+Departments                                       &          24   &          24   &          24   &          24   &          24   &          24   \\
+\hline\hline
+\end{tabular}
+}

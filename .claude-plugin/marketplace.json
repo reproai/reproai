@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-marketplace.json",
+  "name": "reproai",
+  "owner": {
+    "name": "ReproAI"
+  },
+  "metadata": {
+    "description": "ReproAI — author-facing pre-diagnose for replication packages.",
+    "version": "0.4.10"
+  },
+  "plugins": [
+    {
+      "name": "reproai",
+      "source": "./claude-plugin",
+      "description": "Static pre-diagnose: audit/reorganize a replication package so a downstream reproducibility check passes first-try. Venue profiles (AEA, Econometric Society, APSR, AJPS, JOP, ...) + author rule set. No code execution."
+    }
+  ]
+}

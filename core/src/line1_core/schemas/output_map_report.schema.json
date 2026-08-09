@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reproai/line1/output_map_report.schema.json",
+  "title": "Line 1 output/manuscript map (advisory)",
+  "type": "object",
+  "required": ["schema_version", "generated_by", "root", "manuscript", "advisory", "status"],
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "generated_by": { "type": "string" },
+    "root": { "type": "string" },
+    "manuscript": { "type": "string" },
+    "advisory": { "type": "boolean", "const": true },
+    "disclaimer": { "type": "string" },
+    "note": { "type": "string" },
+    "status": { "type": "string", "enum": ["ok", "manuscript_not_found", "unsupported_format"] },
+    "summary": {
+      "type": "object",
+      "required": ["exhibits", "package_outputs", "exhibits_without_output", "outputs_without_exhibit", "panel_mismatches"],
+      "properties": {
+        "exhibits": { "type": "integer", "minimum": 0 },
+        "package_outputs": { "type": "integer", "minimum": 0 },
+        "exhibits_without_output": { "type": "integer", "minimum": 0 },
+        "outputs_without_exhibit": { "type": "integer", "minimum": 0 },
+        "panel_mismatches": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "exhibits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind", "number"],
+        "properties": {
+          "kind": { "type": "string", "enum": ["figure", "table"] },
+          "number": { "type": "string" },
+          "label": { "type": ["string", "null"] },
+          "caption": { "type": "string" },
+          "in_appendix": { "type": "boolean" },
+          "n_panels": { "type": "integer", "minimum": 0 },
+          "n_mapped": { "type": "integer", "minimum": 0 },
+          "unmapped": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "exhibits_without_output": { "type": "array", "items": { "type": "object" } },
+    "outputs_without_exhibit": { "type": "array", "items": { "type": "string" } },
+    "panel_mismatches": { "type": "array", "items": { "type": "object" } }
+  }
+}

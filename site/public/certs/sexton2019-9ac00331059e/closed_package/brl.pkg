@@ -1,0 +1,7 @@
+v 1.0
+
+d brl: Bias-reduced linarization (BRL) of standard errors.
+d Implemented for OLS and logistic regression.
+
+f brl.ado
+f brl.hlp

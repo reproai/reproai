@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reproai/line1/venue_compliance_report.schema.json",
+  "title": "Line 1 venue compliance report",
+  "type": "object",
+  "required": ["schema_version", "generated_by", "root", "venue", "profile_version", "checks"],
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "generated_by": { "type": "string" },
+    "root": { "type": "string" },
+    "venue": { "type": "string" },
+    "profile_version": { "type": "string" },
+    "standard": { "type": "string", "description": "Standard the profile aligns to, e.g. DCAS v1.0 + SSDE README." },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "total": { "type": "integer" },
+        "pass": { "type": "integer" },
+        "fail": { "type": "integer" },
+        "needs_author_action": { "type": "integer" },
+        "not_implemented": { "type": "integer" }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["check_id", "requirement", "status"],
+        "properties": {
+          "check_id": { "type": "string" },
+          "requirement": { "type": "string" },
+          "status": { "type": "string", "enum": ["pass", "fail", "needs_author_action", "not_implemented", "not_applicable"] },
+          "detail": { "type": "string" },
+          "evidence": { "type": "array", "items": { "type": "string" } },
+          "source": { "type": "string", "description": "Authoritative source URL for this requirement." },
+          "author_action": { "type": "string", "description": "Concrete off-package action for a needs_author_action item; guidance, not a verdict." },
+          "how": { "type": "string", "description": "How to perform the author_action." },
+          "self_check": { "type": "string", "description": "How the author confirms the action is done; the engine never re-checks it." },
+          "needs_detector": { "type": "string", "description": "Name of the detector a not_implemented check is waiting on." }
+        }
+      }
+    }
+  }
+}

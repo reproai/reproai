@@ -1,0 +1,91 @@
+schema_version: 1
+venue: jfqa
+association: "Michael G. Foster School of Business, University of Washington (Cambridge University Press)"
+applies_to: ["Journal of Financial and Quantitative Analysis"]
+profile_version: "2026-07-04"
+standard: "JFQA Replication and Data Policy"
+# First finance-journal profile. Finance siblings (JF, RFS, JFE) share most of these expectations —
+# clone this file and rename `venue` + the check_id prefix. Every detector below is in
+# venue_engine.KNOWN_DETECTORS; the two things the static engine cannot verify (run order, and the
+# pseudo-vs-real-data labelling that finance packages need for proprietary sources) are surfaced as
+# manual_author_action checks so they are stated honestly rather than silently credited (issue #37).
+deposit:
+  repository: "Journal-managed replication archive / author-provided package"
+  doi_pattern: null
+  unzipped: false
+  max_files: null
+  max_size_gb: null
+license_default:
+  data: "author choice, subject to source-data licensing (proprietary sources often cannot be redistributed)"
+  code: "open, non-exclusive (author choice)"
+reproduce:
+  scope: [tables, figures, in_text_numbers, simulations]
+  manual_intervention: "results using proprietary data (CRSP, Compustat, TAQ, ...) are reproduced by the author with pseudo/synthetic data or documented access, since the raw source cannot be redistributed"
+verification:
+  who: "JFQA editorial office / replication reviewer"
+  when: "post-acceptance, pre-publication"
+# Finance README template sections the readme_has_sections check looks for (lowercased substrings)
+readme_sections:
+  - "data availability"
+  - "data source"
+  - "computational requirement"
+  - "instructions"
+  - "run order"
+checks:
+  - check_id: JFQA-README
+    requirement: "A README at the package root carries the data-availability statement, data sources, computational requirements, and step-by-step reproduction instructions."
+    detector: readme_has_sections
+    source: "JFQA Replication and Data Policy (Cambridge University Press, cambridge.org/jfq)"
+  - check_id: JFQA-MASTER-SCRIPT
+    requirement: "A master / run-all script regenerates every reported table and figure in the documented order."
+    detector: has_master_script
+    source: "JFQA Replication and Data Policy (Cambridge University Press, cambridge.org/jfq)"
+  - check_id: JFQA-ENV-DECLARED
+    requirement: "State the software, versions, and packages needed to run the code."
+    detector: env_declared
+    source: "JFQA Replication and Data Policy (Cambridge University Press, cambridge.org/jfq)"
+  - check_id: JFQA-NO-ABS-PATHS
+    requirement: "Avoid machine-specific absolute paths so the package runs on the reviewer's machine."
+    detector: no_absolute_paths
+    source: "JFQA Replication and Data Policy (Cambridge University Press, cambridge.org/jfq)"
+  - check_id: JFQA-RAW-TO-ANALYSIS
+    requirement: "Re-derive analysis variables from the raw (or pseudo) source rather than shipping opaque derived files."
+    detector: rederive_from_raw
+    source: "JFQA Replication and Data Policy (Cambridge University Press, cambridge.org/jfq)"
+  - check_id: JFQA-LICENSE
+    requirement: "Include a license for the shipped code and data (respecting proprietary-source restrictions)."
+    detector: license_at_root
+    source: "JFQA Replication and Data Policy (Cambridge University Press, cambridge.org/jfq)"
+  - check_id: JFQA-DATA-AVAILABILITY
+    requirement: "A data-availability statement is present. The author must confirm it lists EACH proprietary source (e.g. CRSP, Compustat, TAQ) with per-source access instructions — the static check confirms only that a statement exists, not that every source is covered."
+    detector: data_availability_statement
+    source: "JFQA Replication and Data Policy (Cambridge University Press, cambridge.org/jfq)"
+  - check_id: JFQA-DATA-CITATION
+    requirement: "Cite each dataset with a persistent identifier (DOI/handle/repository URL). A vendor-only access route with no PID must be confirmed by the author — the static check recognizes only a PID."
+    detector: data_citation
+    source: "JFQA Replication and Data Policy (Cambridge University Press, cambridge.org/jfq)"
+  - check_id: JFQA-SEED-POLICY
+    requirement: "Set a seed before any stochastic step (bootstrap, simulation, resampling) so results are reproducible."
+    detector: seeded_rng
+    source: "JFQA Replication and Data Policy (Cambridge University Press, cambridge.org/jfq)"
+  - check_id: JFQA-PSEUDO-DATA
+    requirement: "When a result uses proprietary data that cannot be redistributed, ship clearly-labelled pseudo/synthetic data (or a documented access path) so the pipeline can be run end to end."
+    detector: manual_author_action
+    author_action: "For every result built on proprietary data (CRSP, Compustat, TAQ, etc.), either ship clearly-labelled pseudo/synthetic data that runs the full pipeline, or document exactly how a licensed reader obtains the real data. Label which files are pseudo and which are real."
+    how: "Add a `pseudo/` (or equivalently named) directory with synthetic inputs matching the schema of each proprietary source, and note in the README which inputs are real vs pseudo."
+    self_check: "A reader without the proprietary data can run the master script to completion on the pseudo data, and every proprietary source is labelled."
+    source: "JFQA Replication and Data Policy (Cambridge University Press, cambridge.org/jfq)"
+  - check_id: JFQA-PER-SOURCE-ACCESS
+    requirement: "Give per-source access instructions for each proprietary dataset (vendor, product, how a licensed reader retrieves the exact extract). The static check cannot verify per-source coverage, so the author confirms it."
+    detector: manual_author_action
+    author_action: "For each proprietary data source, state the vendor and product, the exact extract/query used, and how a licensed reader reproduces that extract."
+    how: "List every proprietary source in the data-availability section with its access instructions, one entry per source."
+    self_check: "Each proprietary source named in the paper has its own access-instructions entry in the README."
+    source: "JFQA Replication and Data Policy (Cambridge University Press, cambridge.org/jfq)"
+  - check_id: JFQA-RUN-ORDER
+    requirement: "Document the order in which scripts must run to regenerate the results."
+    detector: manual_author_action
+    author_action: "State the exact run order of the scripts (or provide a master script that encodes it) so a reviewer regenerates the results without guessing the sequence."
+    how: "Number the scripts (00_, 01_, ...) or list the run order in the README, and/or ship a master do/R script that calls them in order."
+    self_check: "Following the documented order from a clean checkout regenerates every reported table and figure."
+    source: "JFQA Replication and Data Policy (Cambridge University Press, cambridge.org/jfq)"

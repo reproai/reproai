@@ -1,0 +1,47 @@
+schema_version: 1
+venue: generic_openicpsr
+association: Generic (openICPSR)
+applies_to: ["Any venue depositing to openICPSR without a specific repli profile"]
+profile_version: "2026-06-15"
+standard: "SSDE Template README + DCAS (generic fallback)"
+deposit:
+  repository: "openICPSR"
+  doi_pattern: "10.3886/E{project}V1"
+  unzipped: true
+  max_files: 1000
+  max_size_gb: 30
+license_default:
+  data: "CC-BY-4.0"
+  code: "Modified BSD"
+reproduce:
+  scope: [tables, figures, in_text_numbers]
+  manual_intervention: "no manual intervention except a single directory-path edit"
+checks:
+  - check_id: GEN-ICPSR-README-PDF-TOP
+    requirement: "README in the uppermost directory (SSDE template recommended)."
+    detector: readme_pdf_at_root
+    source: "https://zenodo.org/records/7293838"
+  - check_id: GEN-ICPSR-README-SECTIONS
+    requirement: "README covers data availability & provenance, data sources, computational requirements, program-to-output map, and instructions to replicators."
+    detector: readme_has_sections
+    source: "https://zenodo.org/records/7293838"
+  - check_id: GEN-ICPSR-MASTER-SCRIPT
+    requirement: "A master script that runs the full package is strongly encouraged."
+    detector: has_master_script
+    source: "https://social-science-data-editors.github.io/template_README/"
+  - check_id: GEN-ICPSR-ENV-DECLARED
+    requirement: "State software, versions, packages, and expected runtime."
+    detector: env_declared
+    source: "https://zenodo.org/records/7293838"
+  - check_id: GEN-ICPSR-NO-ABS-PATHS
+    requirement: "Run with no manual intervention beyond a single directory-path edit (no scattered absolute paths)."
+    detector: no_absolute_paths
+    source: "https://datceyssprproxy.icpsr.umich.edu/"
+  - check_id: GEN-ICPSR-RAW-TO-ANALYSIS
+    requirement: "Ship raw-to-analysis code that re-derives analysis variables from raw."
+    detector: rederive_from_raw
+    source: "https://zenodo.org/records/7293838"
+  - check_id: GEN-ICPSR-FILE-COUNT
+    requirement: "Zip if more than 1000 files; otherwise deposit unzipped."
+    detector: file_count_limit
+    source: "https://zenodo.org/records/7293838"

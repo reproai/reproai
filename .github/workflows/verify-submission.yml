@@ -1,0 +1,84 @@
+name: Verify submission
+
+# Hostile-input-safe CI for the demo-phase submission channel
+# (AUTHOR_JOURNEY_DESIGN.md sections 3.3-4). Runs on UNTRUSTED pull-request
+# content, so it must never execute anything from the submission:
+#   - `pull_request` (NOT pull_request_target) -> no secrets, no write token.
+#   - read-only permissions.
+#   - `reproai verify-submission` treats each archive as data: it screens the
+#     zip (bomb / size / count / path-traversal), checks the bundle shape, and
+#     runs offline provenance verification (no code execution, no sampled replay).
+# The manuscript's Witness step is this automated gate PLUS a maintainer merge;
+# the registry signs on acceptance (see core/MAINTAINER_RUNBOOK.md).
+#
+# SECURITY: before enabling this on a public repo, pin every third-party action
+# below to a full commit SHA (they use release tags here for legibility).
+
+on:
+  pull_request:
+    paths:
+      - "submissions/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-submission-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out the PR (no persisted credentials)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install the reproai engine
+        run: python -m pip install ./core
+
+      - name: List the archives added by this PR
+        id: changed
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+          mapfile -t ARCHIVES < <(git diff --name-only --diff-filter=A \
+            "origin/${{ github.base_ref }}...HEAD" -- 'submissions/**/*.zip')
+          if [ "${#ARCHIVES[@]}" -eq 0 ]; then
+            echo "No new submission archive in this PR." >&2
+            echo "count=0" >> "$GITHUB_OUTPUT"
+          else
+            printf '%s\n' "${ARCHIVES[@]}"
+            {
+              echo "count=${#ARCHIVES[@]}"
+              echo "archives<<EOF"
+              printf '%s\n' "${ARCHIVES[@]}"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Verify each submitted archive (data only, no code execution)
+        if: steps.changed.outputs.count != '0'
+        run: |
+          set -euo pipefail
+          rc=0
+          while IFS= read -r archive; do
+            [ -z "$archive" ] && continue
+            echo "::group::verify-submission $archive"
+            reproai verify-submission "$archive" || rc=1
+            echo "::endgroup::"
+          done <<< "${{ steps.changed.outputs.archives }}"
+          exit $rc
+
+      - name: Require exactly one archive per PR
+        if: steps.changed.outputs.count != '0' && steps.changed.outputs.count != '1'
+        run: |
+          echo "A submission PR must add exactly one archive; found ${{ steps.changed.outputs.count }}." >&2
+          exit 1

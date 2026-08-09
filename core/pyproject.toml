@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "line1-pre-diagnose"
+version = "0.4.10"
+description = "Line 1 pre-diagnose: a static, no-execution helper that audits and reorganizes a replication package so a downstream reproducibility check passes on the first try."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "reproAI" },
+]
+keywords = ["replication", "reproducibility", "static-analysis", "stata", "r", "python", "aea"]
+dependencies = [
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+validate = ["jsonschema>=4.0"]
+bls = ["py_ecc>=7.0"]
+dev = ["pytest>=7.0", "jsonschema>=4.0", "py_ecc>=7.0"]
+
+[project.scripts]
+reproai = "line1_core.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+line1_core = [
+    "rules/*.yaml",
+    "rules/*.json",
+    "venues/*.yaml",
+    "venues/*.md",
+    "schemas/*.json",
+    "style_guide.md",
+]

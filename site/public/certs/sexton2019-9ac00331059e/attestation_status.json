@@ -1,0 +1,13 @@
+{
+  "signature": {
+    "status": "signed",
+    "scheme": "sigstore-key",
+    "bundle": "certificate.sigstore.json",
+    "rekor_uploaded": true,
+    "public_key": "signer.pub"
+  },
+  "timestamp": {
+    "status": "absent",
+    "reason": "not requested"
+  }
+}

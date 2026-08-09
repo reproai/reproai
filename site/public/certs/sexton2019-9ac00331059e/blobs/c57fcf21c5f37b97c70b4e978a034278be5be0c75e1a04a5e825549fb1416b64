@@ -1,0 +1,18 @@
+{
+\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}
+\begin{tabular}{l*{2}{c}}
+\hline\hline
+                                                  &\multicolumn{1}{c}{(1)}&\multicolumn{1}{c}{(2)}\\
+                                                  &\multicolumn{1}{c}{L.Department infant mortality rate (WHO definition) using DHS data}&\multicolumn{1}{c}{L.Department infant mortality rate (WHO definition) using DHS data}\\
+                                                  &        b/se   &        b/se   \\
+\hline
+Health budget share (percent)                     &      -21.62   &               \\
+                                                  &    (206.34)   &               \\
+Health spending share (percent)                   &               &      -95.52   \\
+                                                  &               &   (1868.26)   \\
+\hline
+N                                                 &          72   &          72   \\
+Departments                                       &          24   &          24   \\
+\hline\hline
+\end{tabular}
+}

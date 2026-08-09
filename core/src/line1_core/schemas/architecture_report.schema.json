@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reproai/line1/architecture_report.schema.json",
+  "title": "Line 1 architecture report",
+  "type": "object",
+  "required": ["schema_version", "generated_by", "root", "files", "entry_points", "dependency_edges", "table_map", "orphans"],
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "generated_by": { "type": "string" },
+    "root": { "type": "string" },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "language", "size_bytes", "sha256"],
+        "properties": {
+          "path": { "type": "string" },
+          "language": { "type": "string", "enum": ["stata", "r", "python", "data", "doc", "other"] },
+          "size_bytes": { "type": "integer", "minimum": 0 },
+          "sha256": { "type": "string" }
+        }
+      }
+    },
+    "entry_points": {
+      "type": "array",
+      "description": "Scripts that appear to be master/entry scripts (run others, not run by others).",
+      "items": {
+        "type": "object",
+        "required": ["path", "reason"],
+        "properties": {
+          "path": { "type": "string" },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "dependency_edges": {
+      "type": "array",
+      "description": "Static include/source/import edges between scripts.",
+      "items": {
+        "type": "object",
+        "required": ["from", "to", "kind"],
+        "properties": {
+          "from": { "type": "string" },
+          "to": { "type": "string" },
+          "kind": { "type": "string", "enum": ["do", "source", "import", "data_use", "read", "write"] },
+          "resolved": { "type": "boolean" },
+          "status": { "type": "string", "enum": ["resolved", "unresolved", "ambiguous"] },
+          "edge_class": { "type": "string", "enum": ["include", "read", "write"] }
+        }
+      }
+    },
+    "table_map": {
+      "type": "array",
+      "description": "Which commands/scripts build which output table, inferred from export commands.",
+      "items": {
+        "type": "object",
+        "required": ["table", "source_file", "export_command", "line"],
+        "properties": {
+          "table": { "type": "string" },
+          "source_file": { "type": "string" },
+          "export_command": { "type": "string" },
+          "line": { "type": "integer", "minimum": 1 },
+          "output_path": { "type": "string" }
+        }
+      }
+    },
+    "orphans": {
+      "type": "object",
+      "required": ["referenced_missing", "present_unreferenced"],
+      "properties": {
+        "referenced_missing": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["target", "referenced_by"],
+            "properties": {
+              "target": { "type": "string" },
+              "referenced_by": { "type": "string" },
+              "line": { "type": "integer" }
+            }
+          }
+        },
+        "present_unreferenced": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

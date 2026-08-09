@@ -1,0 +1,95 @@
+name: Venue contribution
+description: Suggest a journal/venue not yet in reproai, with its replication-package rules.
+title: "Venue: <journal> (<id>)"
+labels: ["contribution:venue", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing a venue. reproai does **not** verify journal legitimacy or your reading of the policy — a maintainer confirms the venue is a recognized journal and checks every requirement against your quoted policy text before anything ships. The easiest way to fill this in is `/reproai:contribute` (new-venue mode), which drafts and validates the profile for you.
+
+        A check may use one of these detectors: `readme_pdf_at_root`, `readme_at_root`, `readme_has_sections`, `has_master_script`, `env_declared`, `no_absolute_paths`, `rederive_from_raw`, `file_count_limit`, `license_at_root`, `manual_author_action`, or `unbuilt_detector` (a statically-checkable requirement that needs a detector reproai does not have yet).
+  - type: input
+    id: profile_id
+    attributes:
+      label: Proposed profile id
+      description: Lowercase letters/digits/underscores. Becomes `venues/<id>.yaml` and the `venue:` field.
+      placeholder: qje
+    validations:
+      required: true
+  - type: input
+    id: journal
+    attributes:
+      label: Journal / venue name
+      placeholder: Quarterly Journal of Economics
+    validations:
+      required: true
+  - type: input
+    id: association
+    attributes:
+      label: Association / publisher
+      placeholder: Oxford University Press
+  - type: input
+    id: applies_to
+    attributes:
+      label: Applies to (journals / tracks, comma-separated)
+  - type: input
+    id: policy_url
+    attributes:
+      label: Official replication / data-and-code policy URL
+      description: Required — this is what makes the suggestion verifiable. Use the most specific (deep) link you can.
+    validations:
+      required: true
+  - type: input
+    id: policy_date
+    attributes:
+      label: Policy last-updated date you read
+      description: Feeds `profile_version` (the policy's date, not today's), so drift detection stays meaningful.
+  - type: textarea
+    id: requirements
+    attributes:
+      label: Requirements, each with a verbatim policy quote
+      description: One per line — `requirement | "verbatim sentence from the policy" | source URL | detector`
+      placeholder: |
+        Master script required | "Authors must provide a single script that runs all analyses." | https://.../policy#run | has_master_script
+    validations:
+      required: true
+  - type: textarea
+    id: draft
+    attributes:
+      label: Drafted profile (validated, not yet verified)
+      description: The `venues/<id>.yaml` drafted by /reproai:contribute and passed by `reproai contribute --venue`. Unverified against the policy until a maintainer checks the quotes above.
+      render: yaml
+    validations:
+      required: true
+  - type: textarea
+    id: gaps
+    attributes:
+      label: Detector gaps (if any)
+      description: Checks marked `unbuilt_detector` — the requirement, and the file or pattern a new detector should look for.
+  - type: checkboxes
+    id: attest
+    attributes:
+      label: Before submitting
+      options:
+        - label: The cited URL is the venue's official, current reproducibility policy.
+          required: true
+        - label: I ran `reproai contribute --venue <draft.yaml>` and it passed (schema + known detectors + clean dry-run).
+          required: true
+        - label: This packet contains no data, results, or paths from my own replication package.
+          required: true
+  - type: input
+    id: credit
+    attributes:
+      label: Credit (optional)
+      description: A name or GitHub handle to credit in the changelog, or leave blank.
+  - type: markdown
+    attributes:
+      value: |
+        ### Maintainer checklist
+        - [ ] Venue is a recognized journal (legitimacy gate).
+        - [ ] Each requirement's quote appears on the cited policy page (string-search).
+        - [ ] `readme_sections` (if used) validated against a known-good package, else dropped for the default hints.
+        - [ ] Any `unbuilt_detector` check: build the detector, or consciously demote to `manual_author_action` with a note.
+        - [ ] Drop `venues/<id>.yaml`; `test_all_venue_profiles_run[<id>]` and `test_no_unbuilt_detectors_in_shipped_profiles` green.
+        - [ ] Update the doc venue-lists; bump (`tools/bump_version.py patch`); CHANGELOG + site changelog.

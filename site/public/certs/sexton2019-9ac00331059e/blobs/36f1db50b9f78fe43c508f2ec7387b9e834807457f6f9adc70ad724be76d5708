@@ -1,0 +1,49 @@
+{smcl}
+{hline}
+help for {hi:brl}
+{hline}
+
+{title:Bias-reduced linarization (BRL) of standard errors.}
+{p 8 21 2}{cmdab:brl}
+{depvar}
+{indepvars}
+{ifin}
+{weight}
+{cmd:,}
+    [
+    {cmd:cluster}{cmd:(}{varname}{cmd:)}
+    {cmd:logit}
+    {cmd:noint}
+    ]
+
+
+{title:Description}
+{pstd}
+{cmd:BRL} implements a standard error correction for OLS and Logit. 
+The method was proposed by Bell and McCaffrey (2002). 
+The procedure produces the clustered analogue to robust "HC2" standard errors (see {help regress}). 
+Bell and McCaffrey show that this estimate is unbiased if the model really is homoskedastic. 
+Cannot be used with covariates that do not vary at the cluster level. If cluster size is large BRL tends to have convergence problems.
+{p_end}
+
+
+{title:Options}
+{p2colset 5 23 28 0}{p2col:{cmd:cluster}{cmd:(}{it:varname}{cmd:)}} a variable indicating clusters.
+{p_end}{p2col: {cmd:logit}} use logistic regression (Logit) instead of OLS (default).
+{p_end}{p2col: {cmd:noint}} surpress constant term.
+{p_end}
+{hline}
+{cmd:aweight}s and {cmd:pweight}s are allowed; see {help weight}.
+
+
+{title: Examples}
+{inp: . use http://www.ats.ucla.edu/stat/stata/seminars/svy_stata_intro/srs, clear}
+{inp: . regress api00 growth emer yr_rnd, robust}
+{inp: . brl api00 growth emer yr_rnd, cluster(dnum)}
+
+
+{title: Background Reading}
+{p 2 4}Angrist J. and Pischke, J.-S. (2009), "Mostly Harmless Econometrics".
+
+{p 2 4} Bell, R.M. and McCaffrey, D.F. (2002): "Bias Reduction in Standard Errors for Linear Regression with Multistage Samples", {it:Survey Methodology 28}, 169-181.
+{p_end}

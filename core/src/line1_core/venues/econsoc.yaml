@@ -1,0 +1,63 @@
+schema_version: 1
+venue: econsoc
+association: The Econometric Society
+applies_to: [Econometrica, "Quantitative Economics", "Theoretical Economics"]
+profile_version: "2026-06-15"
+standard: "ES Data and Code Availability Policy + SSDE Template README (strongly encouraged)"
+deposit:
+  repository: "Econometric Society Journals' Community at Zenodo (or another ES-approved trusted repository)"
+  doi_pattern: "10.5281/zenodo.{id}"
+  unzipped: false
+  max_files: null
+  max_size_gb: 50
+license_default:
+  data: "open, non-exclusive (CC-BY-4.0 recommended)"
+  code: "open, non-exclusive (author choice)"
+reproduce:
+  scope: [tables, figures, in_text_numbers, simulations]
+  manual_intervention: "the Data Editor reproduces all empirical, experimental, and simulation results before acceptance"
+verification:
+  who: "Econometric Society Data Editor"
+  when: "post-conditional-acceptance, pre-publication (papers conditionally accepted after 2023-07-01)"
+checks:
+  - check_id: ES-README-SSDE
+    requirement: "The Social Science Data Editors' template README is strongly encouraged; it carries every required item (data availability statement, data sources, computational requirements, instructions to reproduce)."
+    detector: readme_has_sections
+    source: "https://www.econometricsociety.org/publications/es-data-editor-website/data-and-code-availability-policy"
+  - check_id: ES-MASTER-SCRIPT
+    requirement: "Provide runnable code that regenerates the reported results; a master / run-all script is recommended."
+    detector: has_master_script
+    source: "https://www.econometricsociety.org/publications/es-data-editor-website/package"
+  - check_id: ES-ENV-DECLARED
+    requirement: "State software, versions, and packages; code must be in a source format the appropriate software can directly interpret or compile."
+    detector: env_declared
+    source: "https://www.econometricsociety.org/publications/es-data-editor-website/data-and-code-availability-policy"
+  - check_id: ES-NO-ABS-PATHS
+    requirement: "The Data Editor re-runs the package for the reproducibility check; avoid machine-specific absolute paths."
+    detector: no_absolute_paths
+    source: "https://www.econometricsociety.org/publications/es-data-editor-website/reproduce-and-replicate"
+  - check_id: ES-RAW-TO-ANALYSIS
+    requirement: "Provide raw data, code, and documentation sufficient to reproduce all empirical, experimental, and simulation results; re-derive analysis variables from the raw source rather than shipping opaque derived files."
+    detector: rederive_from_raw
+    source: "https://www.econometricsociety.org/publications/es-data-editor-website/data-and-code-availability-policy"
+  - check_id: ES-DEPOSIT-ZENODO
+    requirement: "After the reproducibility checks, deposit the replication package in the Econometric Society Journals' Community at Zenodo (or another ES-approved trusted repository)."
+    detector: manual_author_action
+    author_action: "After the reproducibility checks pass, deposit the package in the Econometric Society Journals' Community at Zenodo (or another ES-approved trusted repository)."
+    how: "Submit the package to the Zenodo community; record the resulting DOI in the manuscript."
+    self_check: "The Zenodo record holds the complete package and its DOI resolves."
+    source: "https://www.econometricsociety.org/publications/es-data-editor-website/data-and-code-availability-policy"
+  - check_id: ES-RESTRICTED-EXEMPTION
+    requirement: "If data or code cannot be published in an open trusted repository, request an exemption at first submission and commit to preserving the materials for at least five years after publication."
+    detector: manual_author_action
+    author_action: "If data or code cannot be openly published, request an exemption at first submission and commit to preserving the materials for at least five years after publication."
+    how: "State the restriction and your preservation plan in the first-submission cover letter to the Data Editor."
+    self_check: "The exemption request is on record and a five-year preservation arrangement exists."
+    source: "https://www.econometricsociety.org/publications/es-data-editor-website/data-and-code-availability-policy"
+  - check_id: ES-DEPOSIT-TIMELINE
+    requirement: "Submit the replication materials to the Data Editor within one month of conditional acceptance (extensions only via the Director of Publications)."
+    detector: manual_author_action
+    author_action: "Send the replication materials to the Data Editor within one month of conditional acceptance; seek any extension from the Director of Publications."
+    how: "Track the conditional-acceptance date and submit the package before the one-month deadline."
+    self_check: "The materials reached the Data Editor within one month, or an extension is documented."
+    source: "https://www.econometricsociety.org/publications/es-data-editor-website/data-and-code-availability-policy"

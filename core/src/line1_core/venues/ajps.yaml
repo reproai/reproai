@@ -1,0 +1,60 @@
+schema_version: 1
+venue: ajps
+association: Midwest Political Science Association
+applies_to: ["American Journal of Political Science"]
+profile_version: "2026-06-15"
+standard: "AJPS Replication & Verification Policy / JETS (Odum Institute verification)"
+deposit:
+  repository: "AJPS Dataverse (Harvard Dataverse)"
+  doi_pattern: "10.7910/DVN/{id}"
+  unzipped: false
+  max_files: null
+  max_size_gb: null
+license_default:
+  data: "CC0-1.0"
+  code: "CC0-1.0"
+reproduce:
+  scope: [tables, figures, in_text_numbers]
+  manual_intervention: "package must let a verifier reproduce all analytic results; expected to pass third-party verification"
+verification:
+  who: "Odum Institute (UNC) for quantitative; Qualitative Data Repository (Syracuse) for qualitative"
+  when: "pre-acceptance, mandatory since 2015; publication contingent on successful verification"
+checks:
+  - check_id: AJPS-README
+    requirement: "Provide a README/equivalent stating software used, required add-ons, a file inventory, and how files generate results; include proprietary-data access instructions."
+    detector: readme_has_sections
+    source: "https://ajps.org/ajps-verification-policy/"
+  - check_id: AJPS-MASTER-SCRIPT
+    requirement: "Provide runnable scripts (master script recommended) that regenerate all analytic results in the text and SI."
+    detector: has_master_script
+    source: "https://ajps.org/wp-content/uploads/2023/06/ajps_verification-guidelines-NEW.pdf"
+  - check_id: AJPS-ENV-DECLARED
+    requirement: "State software, versions, and required add-on packages."
+    detector: env_declared
+    source: "https://ajps.org/ajps-verification-policy/"
+  - check_id: AJPS-NO-ABS-PATHS
+    requirement: "Verification re-runs the package; avoid machine-specific absolute paths so it runs on the verifier's machine."
+    detector: no_absolute_paths
+    source: "https://ajps.org/ajps-verification-policy/"
+  - check_id: AJPS-RAW-TO-ANALYSIS
+    requirement: "All analytic results in text and supporting materials must be reproducible from the deposited materials."
+    detector: rederive_from_raw
+    source: "https://ajps.org/ajps-verification-policy/"
+  - check_id: AJPS-FILE-COUNT
+    requirement: "Bundle large packages as an archive; keep the deposit navigable for the verifier."
+    detector: file_count_limit
+    source: "https://ajps.org/guidelines-for-accepted-articles/"
+  - check_id: AJPS-RESTRICTED-DATA
+    requirement: "Exemptions (human subjects / restricted / proprietary) need editor approval; still provide other verification materials and a note describing the restriction."
+    detector: manual_author_action
+    author_action: "If any data are restricted, request editor approval for an exemption and add a note describing the restriction, while still providing all other verification materials."
+    how: "Email the editor with the restriction and your access basis; include the non-restricted materials in the deposit."
+    self_check: "You have written editor approval and a restriction note, and every non-restricted result is still verifiable."
+    source: "https://ajps.org/ajps-verification-policy/"
+  - check_id: AJPS-DEPOSIT-DATAVERSE
+    requirement: "Place all verification files in the AJPS Dataverse before final acceptance; verification by Odum is contingent for publication."
+    detector: manual_author_action
+    author_action: "Deposit all verification files in the AJPS Dataverse before final acceptance."
+    how: "Create the AJPS Dataverse record and upload the complete verification package."
+    self_check: "The Dataverse record holds every file Odum needs to verify the results."
+    source: "https://ajps.org/guidelines-for-accepted-articles/"

@@ -1,0 +1,61 @@
+schema_version: 1
+venue: aea
+association: American Economic Association
+applies_to: [AER, "AEJ: Applied", "AEJ: Macro", "AEJ: Micro", "AEJ: Policy", JEL, JEP]
+profile_version: "2026-06-15"
+standard: "DCAS v1.0 + SSDE Template README v1.1"
+deposit:
+  repository: "openICPSR — AEA Data and Code Repository"
+  doi_pattern: "10.3886/E{project}V1"
+  unzipped: true
+  max_files: 1000
+  max_size_gb: 30
+license_default:
+  data: "CC-BY-4.0"
+  code: "Modified BSD"
+reproduce:
+  scope: [tables, figures, in_text_numbers]
+  manual_intervention: "none except a single change to set program/data directory paths"
+checks:
+  - check_id: AEA-README-PDF-TOP
+    requirement: "README.pdf must exist in the uppermost directory, in PDF format."
+    detector: readme_pdf_at_root
+    source: "https://www.aeaweb.org/journals/data/data-code-policy"
+  - check_id: AEA-README-SECTIONS
+    requirement: "README should follow the SSDE template (data availability & provenance, data sources, computational requirements, program-to-output map, instructions to replicators)."
+    detector: readme_has_sections
+    source: "https://zenodo.org/records/7293838"
+  - check_id: AEA-MASTER-SCRIPT
+    requirement: "A master script that runs the full package is strongly encouraged."
+    detector: has_master_script
+    source: "https://aeadataeditor.github.io/aea-de-guidance/"
+  - check_id: AEA-ENV-DECLARED
+    requirement: "Software names+versions, packages+versions, and expected runtime must be stated (README or setup program)."
+    detector: env_declared
+    source: "https://www.aeaweb.org/journals/data/data-code-policy"
+  - check_id: AEA-NO-ABS-PATHS
+    requirement: "Code must run with no manual intervention beyond a single directory-path edit (no scattered absolute paths)."
+    detector: no_absolute_paths
+    source: "https://www.aeaweb.org/journals/data/data-code-policy"
+  - check_id: AEA-RAW-TO-ANALYSIS
+    requirement: "Raw-to-analysis code must ship and run; analysis variables re-derived from raw, not from opaque derived files."
+    detector: rederive_from_raw
+    source: "https://aeadataeditor.github.io/aea-de-guidance/preparing-for-data-deposit.html"
+  - check_id: AEA-FILE-COUNT
+    requirement: "More than 1000 files must be zipped; otherwise deposit unzipped."
+    detector: file_count_limit
+    source: "https://aeadataeditor.github.io/aea-de-guidance/data-deposit-aea.html"
+  - check_id: AEA-FORMS
+    requirement: "Data and Code Availability Form (+ Information Form, Archive Agreement) required."
+    detector: manual_author_action
+    author_action: "Complete the AEA Data and Code Availability Form (plus the Information Form and Archive Agreement) and submit them with the deposit."
+    how: "Fill the official forms; copy the data-availability and software statements from your README so they match."
+    self_check: "All three forms are submitted and their statements agree with the README."
+    source: "https://www.aeaweb.org/journals/forms/data-code-availability"
+  - check_id: AEA-CONFIDENTIAL
+    requirement: "If data cannot be public: dual-package model + a synthetic/fake dataset for a functionality test."
+    detector: manual_author_action
+    author_action: "If any data cannot be made public, build a dual package and add a synthetic/fake dataset that lets a reviewer run a functionality test."
+    how: "Split into a public package (code + synthetic data) and a restricted package; document how the synthetic data mirrors the real schema."
+    self_check: "The package runs end to end on the synthetic data and produces the expected output shapes."
+    source: "https://aeadataeditor.github.io/aea-de-guidance/"

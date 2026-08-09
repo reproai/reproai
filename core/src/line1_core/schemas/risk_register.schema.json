@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reproai/line1/risk_register.schema.json",
+  "title": "Line 1 risk register",
+  "type": "object",
+  "required": ["schema_version", "generated_by", "root", "risks"],
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "generated_by": { "type": "string" },
+    "root": { "type": "string" },
+    "disclaimer": {
+      "type": "string",
+      "description": "Honest limit: pre-diagnose maximizes first-try success; it does NOT guarantee it."
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "blocker": { "type": "integer" },
+        "high": { "type": "integer" },
+        "medium": { "type": "integer" },
+        "low": { "type": "integer" }
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "severity", "kind", "message"],
+        "properties": {
+          "id": { "type": "string" },
+          "severity": { "type": "string", "enum": ["blocker", "high", "medium", "low"] },
+          "kind": {
+            "type": "string",
+            "enum": ["structural", "environment", "provenance", "venue", "expected_output"],
+            "description": "The de-riskable failure classes Line 1 can predict statically."
+          },
+          "message": { "type": "string" },
+          "predicts": { "type": "string", "description": "What downstream Line-2 failure this would cause." },
+          "evidence": { "type": "array", "items": { "type": "string" } },
+          "from_advisory_ids": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "cannot_predict": {
+      "type": "array",
+      "description": "Failures that only surface at execution time (honest limits, never claimed as de-risked).",
+      "items": { "type": "string" }
+    }
+  }
+}

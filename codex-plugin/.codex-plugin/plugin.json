@@ -1,0 +1,20 @@
+{
+  "name": "reproai",
+  "displayName": "ReproAI — replication package pre-diagnose",
+  "version": "0.4.10",
+  "description": "ReproAI Prep — Author-facing pre-diagnose for replication packages. The static skills (check, comply, fix) scan a working directory, apply an author rule set and a venue profile (AEA, ...), and advise how to reorganize the package so a downstream reproducibility check passes on the first try — without executing author code. The optional debug skill runs the package as a smoke test (does it run, did the injected table/figure outputs appear). reproai never compares coefficients and never issues a reproducibility verdict.",
+  "author": {
+    "name": "reproAI"
+  },
+  "homepage": "https://github.com/reproai/reproai",
+  "license": "MIT",
+  "keywords": [
+    "replication",
+    "reproducibility",
+    "pre-diagnose",
+    "aea",
+    "stata",
+    "r",
+    "static-analysis"
+  ]
+}

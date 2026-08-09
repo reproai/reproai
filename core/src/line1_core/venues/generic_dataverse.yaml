@@ -1,0 +1,46 @@
+schema_version: 1
+venue: generic_dataverse
+association: Generic (Harvard / institutional Dataverse)
+applies_to: ["Any venue depositing to a Dataverse without a specific repli profile"]
+profile_version: "2026-06-15"
+standard: "Project TIER + JETS/DA-RT (generic fallback)"
+deposit:
+  repository: "Harvard or institutional Dataverse"
+  doi_pattern: "10.7910/DVN/{id}"
+  unzipped: false
+  max_files: null
+  max_size_gb: null
+license_default:
+  data: "CC0-1.0"
+  code: "CC0-1.0"
+reproduce:
+  scope: [tables, figures, in_text_numbers]
+  manual_intervention: "package should reproduce the reported results from the deposited materials"
+checks:
+  - check_id: GEN-DV-README
+    requirement: "Provide a Read Me (TIER) listing software, versions, add-ons, folder hierarchy, and step-by-step reproduction instructions."
+    detector: readme_has_sections
+    source: "https://www.projecttier.org/tier-protocol/protocol-4-0/"
+  - check_id: GEN-DV-MASTER-SCRIPT
+    requirement: "Provide a master script that runs prep-then-analysis (TIER Scripts structure)."
+    detector: has_master_script
+    source: "https://www.projecttier.org/tier-protocol/protocol-4-0/root/"
+  - check_id: GEN-DV-ENV-DECLARED
+    requirement: "State software, versions, and required add-on packages."
+    detector: env_declared
+    source: "https://www.projecttier.org/tier-protocol/protocol-4-0/root/readme/"
+  - check_id: GEN-DV-NO-ABS-PATHS
+    requirement: "Use relative paths so the package runs from the deposited materials."
+    detector: no_absolute_paths
+    source: "https://www.projecttier.org/tier-protocol/protocol-4-0/"
+  - check_id: GEN-DV-RAW-TO-ANALYSIS
+    requirement: "Rebuild analysis data from original input data (TIER Data structure)."
+    detector: rederive_from_raw
+    source: "https://www.projecttier.org/tier-protocol/protocol-4-0/root/data/"
+  - check_id: GEN-DV-DATA-CITATION
+    requirement: "Provide data citations with persistent identifiers (JETS/DA-RT)."
+    detector: data_citation
+    author_action: "Cite each dataset with a persistent identifier (a DOI or handle) in the README and the manuscript."
+    how: "For every dataset, add a citation with its DOI/handle (e.g. a Dataverse or ICPSR link) so a replicator can retrieve the exact data."
+    self_check: "Each dataset the code reads has a citation carrying a resolvable persistent identifier."
+    source: "https://journals.sagepub.com/doi/full/10.1177/0010414015594717"

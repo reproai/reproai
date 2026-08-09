@@ -1,0 +1,70 @@
+{
+  "generated_by": "line1-core 0.10.0",
+  "command": "close",
+  "seed": 20260708,
+  "package": "Charron2013_src",
+  "closed_copy": "/tmp/opencode/Charron2013",
+  "closure_targets": [
+    "do.do"
+  ],
+  "injections": [
+    {
+      "file": "do.do",
+      "language": "stata",
+      "lines_added": 6
+    }
+  ],
+  "results_instrumentation": [
+    {
+      "file": "do.do",
+      "n_commands": 4,
+      "n_figures": 0
+    }
+  ],
+  "self_test": {
+    "runs": 2,
+    "steps_per_run": [
+      [
+        {
+          "script": "do.do",
+          "exit_code": 0,
+          "duration_s": 0.34
+        }
+      ],
+      [
+        {
+          "script": "do.do",
+          "exit_code": 0,
+          "duration_s": 0.31
+        }
+      ]
+    ],
+    "written_files": 18,
+    "categories": {
+      "identical": 18
+    },
+    "per_file": {
+      "analysis_data_cmd_do_1.csv": "identical",
+      "analysis_data_cmd_do_10.csv": "identical",
+      "analysis_data_cmd_do_11.csv": "identical",
+      "analysis_data_cmd_do_12.csv": "identical",
+      "analysis_data_cmd_do_13.csv": "identical",
+      "analysis_data_cmd_do_14.csv": "identical",
+      "analysis_data_cmd_do_15.csv": "identical",
+      "analysis_data_cmd_do_16.csv": "identical",
+      "analysis_data_cmd_do_17.csv": "identical",
+      "analysis_data_cmd_do_2.csv": "identical",
+      "analysis_data_cmd_do_3.csv": "identical",
+      "analysis_data_cmd_do_4.csv": "identical",
+      "analysis_data_cmd_do_5.csv": "identical",
+      "analysis_data_cmd_do_6.csv": "identical",
+      "analysis_data_cmd_do_7.csv": "identical",
+      "analysis_data_cmd_do_8.csv": "identical",
+      "analysis_data_cmd_do_9.csv": "identical",
+      "analysis_data_spec_9.csv": "identical"
+    },
+    "tier": "T0",
+    "scratch": "/tmp/reproai_close_selftest_qkegni5o"
+  },
+  "tier": "T0"
+}

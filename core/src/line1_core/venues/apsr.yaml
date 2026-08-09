@@ -1,0 +1,56 @@
+schema_version: 1
+venue: apsr
+association: American Political Science Association
+applies_to: ["American Political Science Review"]
+profile_version: "2026-06-15"
+standard: "JETS / DA-RT (no fixed README template; TIER recommended)"
+deposit:
+  repository: "APSR Dataverse (Harvard Dataverse)"
+  doi_pattern: "10.7910/DVN/{id}"
+  unzipped: false
+  max_files: null
+  max_size_gb: null
+license_default:
+  data: "CC0-1.0"
+  code: "CC0-1.0"
+reproduce:
+  scope: [tables, figures]
+  manual_intervention: "must reproduce the manuscript tables and figures; no explicit single-path-edit rule"
+verification:
+  who: "APSR editorial office (in-house)"
+  when: "pre-publication, since December 2021"
+checks:
+  - check_id: APSR-README
+    requirement: "Provide a README documenting software, add-on packages and how to obtain them, and how files generate the tables/figures."
+    detector: readme_has_sections
+    source: "https://apsanet.org/publications/journals/american-political-science-review/guidelines-for-reproducibility/"
+  - check_id: APSR-MASTER-SCRIPT
+    requirement: "Provide an analysis dataset / runnable scripts that regenerate the manuscript without rerunning the whole pipeline; a master script is recommended."
+    detector: has_master_script
+    source: "https://apsanet.org/publications/journals/american-political-science-review/guidelines-for-reproducibility/"
+  - check_id: APSR-ENV-DECLARED
+    requirement: "List software, versions, and add-on packages used."
+    detector: env_declared
+    source: "https://apsanet.org/publications/journals/american-political-science-review/guidelines-for-reproducibility/"
+  - check_id: APSR-NO-ABS-PATHS
+    requirement: "Package should run from the deposited materials; avoid machine-specific absolute paths."
+    detector: no_absolute_paths
+    source: "https://apsanet.org/publications/journals/american-political-science-review/guidelines-for-reproducibility/"
+  - check_id: APSR-RAW-TO-ANALYSIS
+    requirement: "Analysis should be reproducible from the deposited data through the code."
+    detector: rederive_from_raw
+    source: "https://apsanet.org/publications/journals/american-political-science-review/guidelines-for-reproducibility/"
+  - check_id: APSR-DATA-AVAILABILITY
+    requirement: "Include a data availability statement; if data are restricted, explain and give access instructions before review."
+    detector: data_availability_statement
+    author_action: "Add a data availability statement to the README; for any restricted data, explain the restriction and how a reviewer can obtain access before review."
+    how: "State for each dataset whether it is public or restricted, with a source/URL; for restricted data, give the access route and contact."
+    self_check: "Every dataset the code uses is listed, and each restricted one has access instructions."
+    source: "https://apsanet.org/publications/journals/american-political-science-review/apsr-submission-guidelines/"
+  - check_id: APSR-DEPOSIT-DATAVERSE
+    requirement: "Deposit the reproducibility package in the APSR Dataverse on Harvard Dataverse before final acceptance."
+    detector: manual_author_action
+    author_action: "Deposit the full reproducibility package in the APSR Dataverse on Harvard Dataverse before final acceptance."
+    how: "Create the Dataverse record, upload the package, and link it from the manuscript."
+    self_check: "The Dataverse record holds the complete package and resolves from its DOI."
+    source: "https://apsanet.org/publications/journals/american-political-science-review/guidelines-for-reproducibility/"

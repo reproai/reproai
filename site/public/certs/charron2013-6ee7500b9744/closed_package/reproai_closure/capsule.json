@@ -1,0 +1,25 @@
+{
+  "generated_by": "line1-core 0.10.0",
+  "seed": 20260708,
+  "pinned_env": {
+    "TZ": "UTC",
+    "LC_ALL": "C",
+    "LANG": "C",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "VECLIB_MAXIMUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "SOURCE_DATE_EPOCH": "1717200000",
+    "PYTHONHASHSEED": "20260708"
+  },
+  "platform": "Linux 6.17.0-35-generic x86_64",
+  "languages": [
+    "stata"
+  ],
+  "closure_targets": [
+    "do.do"
+  ],
+  "stata_binary": "stata-mp",
+  "stata_ado_files_vendored": []
+}

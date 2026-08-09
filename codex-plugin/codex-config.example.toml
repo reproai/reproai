@@ -1,0 +1,17 @@
+# Example Codex config for reproai. Copy the relevant bits into ~/.codex/config.toml
+# (or a profile file) — adjust to taste.
+
+# Static skills (check / comply / fix) never execute author code; a read-only or
+# workspace-write sandbox is plenty. fix writes to a COPY, so it needs workspace-write.
+[profiles.reproai]
+approval_policy   = "on-request"
+sandbox_mode      = "workspace-write"
+
+# The debug skill RUNS the author's package as a smoke test. Give it a writable workspace
+# (it operates on a copy) and the working roots it needs. It still never compares coefficients
+# and never issues a verdict.
+[profiles.reproai-debug]
+approval_policy   = "on-request"
+sandbox_mode      = "workspace-write"
+# [profiles.reproai-debug.sandbox_workspace_write]
+# writable_roots = ["/path/to/your/package_fixed"]

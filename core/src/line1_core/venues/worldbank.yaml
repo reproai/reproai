@@ -1,0 +1,102 @@
+schema_version: 1
+venue: worldbank
+association: World Bank (Development Impact / DIME — Reproducible Research Repository)
+applies_to: ["World Bank Reproducible Research Repository", "World Bank Policy Research Working Papers"]
+profile_version: "2025-10-20"
+standard: "Checklist for World Bank Reproducibility Packages (wb-reproducible-research-repository)"
+applies_when: "Internal reproducibility verification that World Bank staff and consultants go through before journal submission; authors request a verification via the intake form."
+deposit:
+  repository: "A link to the complete reproducibility package (OneDrive or GitHub) provided to the World Bank reproducibility team via the intake form"
+  unzipped: false
+  max_files: null
+reproduce:
+  scope: [tables, figures, in_text_numbers]
+  manual_intervention: "the World Bank reproducibility reviewer re-runs the package after changing only the top-level directory"
+verification:
+  who: "World Bank reproducibility team (intake via the official policy contact)"
+  when: "before journal submission, on author request via the intake form"
+# README sections matched as lowercase substrings against the README; these mirror the
+# World Bank checklist's required README contents.
+readme_sections:
+  - "software and version"
+  - "mapping of outputs to scripts"
+  - "line(s) in the main script"
+checks:
+  - check_id: WB-MASTER-SCRIPT
+    requirement: "Provide a main script that runs all code after changing only the top-level directory (Stata main.do / R main.R templates are recommended)."
+    detector: has_master_script
+    policy_quote: "A main script that allows the reviewer to run all code after changing only the top-level directory."
+    source: "https://github.com/worldbank/wb-reproducible-research-repository/blob/main/reproducibility_package_checklist.md"
+  - check_id: WB-README-AT-ROOT
+    requirement: "If the package has no main script, a README must specify the order of execution of code files; a README guiding the reader through the package is required."
+    detector: readme_at_root
+    policy_quote: "If the package does not include a main script, it must have a README that specifies the order of execution of code files."
+    source: "https://github.com/worldbank/wb-reproducible-research-repository/blob/main/reproducibility_package_checklist.md"
+  - check_id: WB-README-SECTIONS
+    requirement: "The README must state the software and version used, map outputs to the scripts that generate them, and identify the line(s) in the main script to change to run on a different machine. It should also guide future readers through the package and give guidance for the reviewer reproducing it."
+    detector: readme_has_sections
+    policy_quote: "Software and version used"
+    source: "https://github.com/worldbank/wb-reproducible-research-repository/blob/main/reproducibility_package_checklist.md"
+  - check_id: WB-ENV-DECLARED
+    requirement: "State the software and version used to run the package."
+    detector: env_declared
+    policy_quote: "Software and version used"
+    source: "https://github.com/worldbank/wb-reproducible-research-repository/blob/main/reproducibility_package_checklist.md"
+  - check_id: WB-NO-ABS-PATHS
+    requirement: "The package must run after changing only the top-level directory; the README identifies the line(s) in the main script to change for a different machine, so avoid scattered machine-specific absolute paths."
+    detector: no_absolute_paths
+    policy_quote: "Line(s) in the main script that should be changed to run the code on a different machine"
+    source: "https://github.com/worldbank/wb-reproducible-research-repository/blob/main/reproducibility_package_checklist.md"
+  - check_id: WB-RAW-TO-ANALYSIS
+    requirement: "For traceability, the reproducibility package is expected to start from original (unprocessed) data; ship the code that goes from the original data to the results."
+    detector: rederive_from_raw
+    policy_quote: "the reproducibility package is expected to start from original (unprocessed) data"
+    source: "https://github.com/worldbank/wb-reproducible-research-repository/blob/main/reproducibility_package_checklist.md"
+  - check_id: WB-DATA-AVAILABILITY
+    requirement: "Include a Data Availability Statement summarizing availability for the data used (all public / some restricted / none public), with a rights statement confirming legitimate access and per-dataset source, URL, and access year."
+    detector: data_availability_statement
+    author_action: "Add a Data Availability Statement to the README: state whether all data are public, some restricted, or none public, and list each dataset with its source, URL, and the access year."
+    how: "Put it near the top of the README; for each dataset give name, provider/source, URL or DOI, and access date."
+    self_check: "Every dataset the code reads appears in the statement with a source and access detail."
+    policy_quote: "Summary of availability for the data used: All data publicly available, Some data restricted, No data publicly available"
+    source: "https://github.com/worldbank/wb-reproducible-research-repository/blob/main/reproducibility_package_checklist.md"
+  - check_id: WB-DATA-RIGHTS
+    requirement: "Provide a rights statement confirming that the authors had legitimate access to all data used in the manuscript."
+    detector: manual_author_action
+    author_action: "State in the README that you had legitimate access to every dataset used, and the basis for that access."
+    how: "One sentence per restricted source describing the license, agreement, or permission under which you accessed it."
+    self_check: "Each restricted dataset names the agreement or permission that authorized your use."
+    policy_quote: "Rights statement confirming that the authors had legitimate access to all data used in the manuscript"
+    source: "https://github.com/worldbank/wb-reproducible-research-repository/blob/main/reproducibility_package_checklist.md"
+  - check_id: WB-MANUSCRIPT
+    requirement: "Include the final manuscript that will be used for publication, and keep it consistent with the final code."
+    detector: manual_author_action
+    author_action: "Add the final manuscript (the version going to publication) to the package and confirm its results match the final code."
+    how: "Place the manuscript file in the package and re-check that its reported numbers come from the shipped code."
+    self_check: "The numbers in the manuscript match the outputs the code produces."
+    policy_quote: "Please include the final manuscript that will be used for publication."
+    source: "https://github.com/worldbank/wb-reproducible-research-repository/blob/main/reproducibility_package_checklist.md"
+  - check_id: WB-RAW-OUTPUTS
+    requirement: "Include the paper's tables and figures in raw form (the outputs used in the paper)."
+    detector: manual_author_action
+    author_action: "Ship the raw outputs (tables and figures) that the paper uses, as the code emits them."
+    how: "Save the code's output files (e.g. the .tex/.csv tables and figure files) into the package."
+    self_check: "Each table and figure in the paper has a corresponding raw output file in the package."
+    policy_quote: "Outputs used in the paper (e.g., tables and figures) in raw form"
+    source: "https://github.com/worldbank/wb-reproducible-research-repository/blob/main/reproducibility_package_checklist.md"
+  - check_id: WB-CODE-BUILDS-EXHIBITS
+    requirement: "Code should create all exhibits and in-text numerical citations not drawn directly from tables."
+    detector: manual_author_action
+    author_action: "Make sure the code generates every exhibit and every in-text number that is not read straight from a table."
+    how: "Add code that computes and exports the in-text statistics, rather than typing them into the manuscript by hand."
+    self_check: "No reported exhibit or in-text number is produced by hand; each traces to a line of code."
+    policy_quote: "Code should create all exhibits and in-text numerical citations not drawn directly from tables."
+    source: "https://github.com/worldbank/wb-reproducible-research-repository/blob/main/reproducibility_package_checklist.md"
+  - check_id: WB-REQUEST-VERIFICATION
+    requirement: "Request a reproducibility verification via the World Bank intake form, providing a link to the complete package, programming language(s), and approximate run time."
+    detector: manual_author_action
+    author_action: "Submit the World Bank reproducibility intake form with a link to the complete package, the programming language(s), and the approximate run time."
+    how: "Use the official intake form; attach a OneDrive/GitHub link to the package."
+    self_check: "You received an intake confirmation and the link you gave opens the complete package."
+    policy_quote: "Authors can request a reproducibility verification here."
+    source: "https://github.com/worldbank/wb-reproducible-research-repository/blob/main/reproducibility_package_checklist.md"

@@ -1,0 +1,77 @@
+schema_version: 1
+venue: jasa
+association: American Statistical Association (Taylor & Francis)
+applies_to: ["JASA Applications & Case Studies", "JASA Theory & Methods"]
+profile_version: "2026-06-18"
+standard: "JASA Reproducibility Guide — ACC form + reproducibility materials (jasa-acs.github.io/repro-guide)"
+applies_when: "Required for all Applications & Case Studies manuscripts (since 2016), and for Theory & Methods manuscripts whose original submission was on or after 2021-09-01. Checked at the (invited) revision stage."
+deposit:
+  repository: "A Git repository (GitHub/GitLab/BitBucket; may stay private until publication) plus a single reproducibility_materials.zip uploaded with the article supplements"
+  unzipped: false
+  max_files: null
+license_default:
+  code: "MIT (the default on the JASA Data & Code Availability form)"
+  data: "open (author choice)"
+reproduce:
+  scope: [tables, figures, in_text_numbers]
+  manual_intervention: "the JASA reproducibility reviewer re-runs the package; conceptual tables/figures are exempt when the README justifies them"
+verification:
+  who: "JASA reproducibility reviewer (Associate Editor for Reproducibility)"
+  when: "at the invited-revision stage, before acceptance"
+# JASA README template section keywords (matched as lowercase substrings against the README);
+# these mirror the accepted package's ReadMe.md headings, incl. the results-to-be-replicated map.
+readme_sections:
+  - "data availability"
+  - "computational requirement"
+  - "results to be replicated"
+  - "data source"
+checks:
+  - check_id: JASA-README
+    requirement: "A README at the package root (the JASA template ships ReadMe.pdf) documenting the data, the code, and the steps to reproduce every reported result. A PDF is expected; a Markdown/text README passes with a note to also export the PDF."
+    detector: readme_at_root
+    source: "https://jasa-acs.github.io/repro-guide/"
+  - check_id: JASA-README-SECTIONS
+    requirement: "The README should follow the JASA template: data availability and provenance, a dataset list with sources, computational requirements, a results-to-be-replicated map (each table/figure to the code that produces it), and step-by-step run instructions."
+    detector: readme_has_sections
+    source: "https://github.com/jasa-acs/repro-template"
+  - check_id: JASA-MASTER-SCRIPT
+    requirement: "Provide a master script that runs the full package end to end (e.g. master.R) so the reviewer can reproduce everything in one step."
+    detector: has_master_script
+    source: "https://jasa-acs.github.io/repro-guide/"
+  - check_id: JASA-ENV-DECLARED
+    requirement: "State the software and versions, package versions, expected run-time, and the number of cores used (the README computational-requirements section and the ACC form)."
+    detector: env_declared
+    source: "https://jasa-acs.github.io/repro-guide/"
+  - check_id: JASA-NO-ABS-PATHS
+    requirement: "The reproducibility reviewer re-runs the package, so avoid machine-specific absolute paths; set the working directory through the project file (.Rproj) or relative paths."
+    detector: no_absolute_paths
+    source: "https://jasa-acs.github.io/repro-guide/"
+  - check_id: JASA-RAW-TO-ANALYSIS
+    requirement: "Ship the preprocessing code that derives the analysis data from the raw source, and describe the steps in BOTH the README and the ACC form Part 1 (Data) abstract so they stay consistent with the code."
+    detector: rederive_from_raw
+    source: "https://jasa-acs.github.io/repro-guide/"
+  - check_id: JASA-LICENSE
+    requirement: "Include a LICENSE file in the package. MIT is the default on the Data & Code Availability form; a referee will flag a missing license."
+    detector: license_at_root
+    source: "https://jasa-acs.github.io/repro-guide/"
+  - check_id: JASA-REPRO-RNG
+    requirement: "Stochastic results must be reproducible: set seeds, and for parallel code use doRNG (registerDoRNG + %dorng%) rather than a bare doParallel %dopar% loop. After fixing a non-reproducible parallel loop, regenerate the affected tables."
+    detector: seeded_rng
+    author_action: "If a parallel loop draws random numbers without a reproducible stream, switch to doRNG (registerDoRNG + %dorng%) or clusterSetRNGStream, then regenerate the affected tables."
+    how: "Wrap the parallel loop with registerDoRNG(seed) (or use %dorng%), or set clusterSetRNGStream on the cluster; rerun to refresh outputs."
+    self_check: "Running the package twice from a clean session yields identical stochastic numbers."
+    source: "https://jasa-acs.github.io/repro-guide/"
+  - check_id: JASA-ACC-FORM
+    requirement: "Complete and submit the Data & Code Availability (ACC) form as a separate PDF, and keep its Part 1 (Data) and Part 3 (Workflow) abstracts consistent with the README and the code."
+    detector: manual_author_action
+    author_action: "Fill in and submit the JASA Data & Code Availability (ACC) form as a separate PDF with the supplements."
+    how: "Use the ACC form template; copy the data and workflow descriptions from your README so they match."
+    self_check: "The form's Part 1 (Data) and Part 3 (Workflow) abstracts say the same thing as the README and the code."
+    source: "https://jasa-acs.github.io/repro-guide/pages/acc.html"
+  - check_id: JASA-DEPOSIT
+    requirement: "Host the materials in a Git repository (public by publication) and provide a single reproducibility_materials.zip with the article supplements."
+    detector: manual_author_action
+    author_action: "Put the materials in a Git repository (it may stay private until publication) and upload a single reproducibility_materials.zip with the supplements."
+    how: "Create the repo (GitHub/GitLab/BitBucket), then export a zip of the full package for the article supplements."
+    self_check: "The zip opens to the complete package and the repository is set to go public at publication."
+    source: "https://jasa-acs.github.io/repro-guide/"

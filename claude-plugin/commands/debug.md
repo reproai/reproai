@@ -1,0 +1,99 @@
+---
+name: reproai-debug
+description: Trial-run a replication package (on a COPY) as a smoke test — confirm the code runs without errors and that the injected Table/Figure output commands actually produced files. On a runtime error it does NOT auto-fix; it explains the root cause, offers a few fix options, and asks the author to choose (AskUserQuestion), then applies the chosen fix and re-runs. It executes code but never compares coefficients and never issues a reproducibility verdict. Use after /reproai-fix to verify the fixed copy actually runs and emits its tables and figures.
+allowed-tools: Read, Grep, Bash, Edit, Write, AskUserQuestion
+---
+
+# /reproai debug — smoke-test the package, author decides every fix
+
+This is the one reproai command that **runs the author's code**. Its purpose is narrow and explicit:
+a **smoke test** — confirm (a) the package runs end-to-end without errors, and (b) the output
+commands (especially the ones `/reproai-fix` injected for D1) actually wrote their tables and figures
+to `output/tables` / `output/figures`. Then surface every generated table and figure for the author's
+eyeball test against the paper.
+
+**What this command does NOT do** (still true, and important):
+- It does **not** compare coefficients to the paper.
+- It does **not** issue any "reproducible / verified / certified" verdict — that is a separate step (ReproAI Cert).
+- It does **not** auto-fix errors in a silent loop. **Every fix is the author's decision.**
+- It does **not** change a venue check's status. If you surface venue results and the author says
+  they completed a `needs_author_action` item, record it as a NOTE only; the deterministic engine
+  owns every status, and an author's answer never flips `needs_author_action` to `pass`.
+
+## Boundary
+
+- Always operate on a **copy** (`<root>_fixed`, the output of `/reproai-fix`, or a fresh copy you
+  make). The author's original package is never run-modified.
+- You execute code, but you only read two things off the run: **did it error**, and **did the
+  expected output files appear**. Nothing numerical is judged.
+
+## Steps
+
+1. **Pick the target copy.** Prefer the `<root>_fixed` produced by `/reproai-fix`. If none exists,
+   make one: `cp -r <ROOT> <ROOT>_debug`. Never run the original in place.
+
+1b. **PRECONDITION — run the static hard gate first. If it fails, STOP.**
+
+    ```bash
+    reproai gate <COPY>; echo "gate exit: $?"
+    ```
+
+    `reproai gate` exits nonzero while ANY paper Table/Figure still lacks a valid export under
+    `output/tables` / `output/figures`. **Do not proceed to run the package until it exits 0** —
+    debugging a package that isn't even instrumented to emit its artifacts is pointless. If the gate
+    fails, go back to `/reproai-fix` and finish injecting the missing exports. Paste the gate output.
+
+2. **Determine the run order.** Use the master script if present; else the README's documented order;
+   else ask the author for the order (this is exactly the `A11-explicit-run-order` finding). Do not
+   guess an order for a multi-script package.
+
+3. **Trial-run, one script at a time**, capturing stdout/stderr to a log:
+   - Stata: `stata -b do <script>.do` (or `stata-mp`/`StataSE` as available), then read `<script>.log`
+     for `r(###)` errors.
+   - R: `Rscript <script>.R 2>&1 | tee <script>.log`.
+   - Python: `python3 <script>.py 2>&1 | tee <script>.log`.
+   Stop at the first script that errors.
+
+4. **On a runtime error — STOP and consult the author. Do NOT auto-fix.**
+   a. Read the log; locate the failing command and the error code/message.
+   b. Determine the **root cause** in one or two sentences (missing package, undefined variable,
+      missing intermediate file, path issue, version-specific syntax, etc.).
+   c. Compose **2–4 concrete fix options**, each with its trade-off / risk.
+   d. Call **`AskUserQuestion`** with a `questions` entry:
+      - `header`: short label, e.g. "ivreg2 not found"
+      - `question`: the root cause + what you propose
+      - `options`: each `{label, description}` = one fix option (the host adds an "Other" free-text
+        choice automatically)
+   e. **Wait for the author's choice.** Apply ONLY the chosen option, to the copy. If the author
+      picks "Other", follow their instruction.
+   f. Re-run from the failing script. Repeat from step 4 if it errors again.
+
+5. **When the package runs clean, run the runtime HARD GATE (this is the completion authority):**
+
+   ```bash
+   reproai verify <COPY> --since <RUN_START_EPOCH>; echo "verify exit: $?"
+   ```
+
+   `reproai verify` deterministically checks that EVERY expected Table/Figure output file actually
+   exists, is non-empty, and (with `--since`) was created during this run. It exits nonzero with the
+   `not_produced` list if any expected artifact is missing. **You are not done until `reproai verify`
+   exits 0.** Paste its output. A missing artifact means the output command didn't fire (or wrote
+   elsewhere) → go to step 4 (diagnose, ask the author), fix, re-run, re-verify. Do not declare
+   "tables and figures produced" on your own say-so — `reproai verify` says so, or it isn't true.
+
+6. **Hand the author the smoke-test result** (only after `reproai verify` exits 0):
+   - which scripts ran clean,
+   - the list of generated tables (paths under `output/tables/`) and figures (`output/figures/`),
+   - any fixes applied (and which option the author chose for each),
+   - an explicit note: "This is a smoke test — the code runs and emits its artifacts. It is NOT a
+     reproducibility verdict; eyeball the tables/figures against the paper, or send the package to
+     ReproAI Cert for numerical certification."
+
+## Hard rules
+
+- Run only the copy; never run-modify the original.
+- Never auto-fix a runtime error — always present root cause + options via `AskUserQuestion` and let
+  the author choose.
+- Never compare a produced number to the paper; never say the package "reproduces".
+- If the runtime (Stata/R/Python) is not installed, say so and stop — do not fake a run.
+- Respect the run order; for a multi-script package with no documented order, ask, don't guess.

@@ -1,0 +1,56 @@
+schema_version: 1
+venue: jop
+association: Southern Political Science Association
+applies_to: ["Journal of Politics"]
+profile_version: "2026-06-15"
+standard: "JETS / DA-RT (no fixed README template; TIER recommended)"
+deposit:
+  repository: "JOP Dataverse (Harvard Dataverse)"
+  doi_pattern: "10.7910/DVN/{id}"
+  unzipped: false
+  max_files: null
+  max_size_gb: null
+license_default:
+  data: "CC0-1.0"
+  code: "CC0-1.0"
+reproduce:
+  scope: [tables, figures, in_text_numbers]
+  manual_intervention: "materials must reproduce the numerical results; verified in-house before publication"
+verification:
+  who: "JOP replication analyst (in-house)"
+  when: "post-acceptance, pre-publication, since ~2021"
+checks:
+  - check_id: JOP-README
+    requirement: "Provide a README documenting software, add-ons, file inventory, and how files generate the reported results."
+    detector: readme_has_sections
+    source: "https://www.journals.uchicago.edu/journals/jop/data-policy"
+  - check_id: JOP-MASTER-SCRIPT
+    requirement: "Provide runnable scripts (master script recommended) that regenerate the numerical results."
+    detector: has_master_script
+    source: "https://www.journals.uchicago.edu/journals/jop/data-policy"
+  - check_id: JOP-ENV-DECLARED
+    requirement: "State software, versions, and required add-on packages."
+    detector: env_declared
+    source: "https://www.journals.uchicago.edu/journals/jop/data-policy"
+  - check_id: JOP-NO-ABS-PATHS
+    requirement: "In-house verification re-runs the package; avoid machine-specific absolute paths."
+    detector: no_absolute_paths
+    source: "https://www.journals.uchicago.edu/journals/jop/data-policy"
+  - check_id: JOP-RAW-TO-ANALYSIS
+    requirement: "Numerical results must be reproducible from the deposited materials."
+    detector: rederive_from_raw
+    source: "https://www.journals.uchicago.edu/journals/jop/data-policy"
+  - check_id: JOP-RESTRICTED-DATA
+    requirement: "Notify the editor at submission of any restricted data (JETS baseline); the editor may grant an exemption with conditions."
+    detector: manual_author_action
+    author_action: "At submission, notify the editor of any restricted data; if granted an exemption, follow its conditions."
+    how: "State the restricted source and your access basis in the cover note to the editor."
+    self_check: "The editor is on record about the restriction and any exemption conditions are met."
+    source: "https://journals.sagepub.com/doi/full/10.1177/0010414015594717"
+  - check_id: JOP-DEPOSIT-DATAVERSE
+    requirement: "Deposit replication files in the JOP Dataverse on Harvard Dataverse before publication."
+    detector: manual_author_action
+    author_action: "Deposit the replication files in the JOP Dataverse on Harvard Dataverse before publication."
+    how: "Create the JOP Dataverse record and upload the complete replication package."
+    self_check: "The Dataverse record holds the full package and resolves from its DOI."
+    source: "https://www.journals.uchicago.edu/journals/jop/data-policy"

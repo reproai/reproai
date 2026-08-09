@@ -1,0 +1,36 @@
+{
+  "generated_by": "line1-core 0.9.0",
+  "seed": 20260708,
+  "pinned_env": {
+    "TZ": "UTC",
+    "LC_ALL": "C",
+    "LANG": "C",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "VECLIB_MAXIMUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "SOURCE_DATE_EPOCH": "1717200000",
+    "PYTHONHASHSEED": "20260708"
+  },
+  "platform": "Linux 6.17.0-35-generic x86_64",
+  "languages": [
+    "r",
+    "stata"
+  ],
+  "closure_targets": [
+    "0_SWF_replication.do"
+  ],
+  "r_version": "Rscript (R) version 4.3.3 (2024-02-29)",
+  "r_packages_referenced": {
+    "NPC": "NA",
+    "foreign": "0.8.91",
+    "magrittr": "2.0.5",
+    "pkg": "NA",
+    "plm": "2.6.7"
+  },
+  "stata_binary": "stata-mp",
+  "stata_ado_files_vendored": [
+    "brl.ado"
+  ]
+}

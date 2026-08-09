@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reproai/line1/advisory_plan.schema.json",
+  "title": "Line 1 advisory plan",
+  "type": "object",
+  "required": ["schema_version", "generated_by", "root", "items"],
+  "properties": {
+    "schema_version": { "type": "integer", "const": 3 },
+    "generated_by": { "type": "string" },
+    "root": { "type": "string" },
+    "lossless_contract": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Universal semantics-preserving contract every host-LLM rewrite must honor."
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "total": { "type": "integer" },
+        "by_priority": { "type": "object" },
+        "defect": { "type": "integer" },
+        "normalization": { "type": "integer" },
+        "llm_rewrite": { "type": "integer" },
+        "propose_only": { "type": "integer" }
+      }
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "rule_id", "category", "kind", "priority", "message", "evidence"],
+        "properties": {
+          "id": { "type": "string" },
+          "rule_id": { "type": "string", "description": "Author-rule-set id, e.g. B2-stata-abbrev." },
+          "category": { "type": "string", "enum": ["structural", "code-style", "environment", "normalization"] },
+          "kind": {
+            "type": "string",
+            "enum": ["defect", "normalization"],
+            "description": "defect = would cost the downstream pipeline; normalization = a better way to write it."
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["P0", "P1", "P2", "P3", "P4"],
+            "description": "P0 blocks reproduction; P1 large downstream cost; P2 moderate misread risk; P3 minor; P4 compliance/polish."
+          },
+          "message": { "type": "string", "description": "Author-facing 'Author should...' statement." },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["file"],
+              "properties": {
+                "file": { "type": "string" },
+                "line": { "type": "integer" },
+                "snippet": { "type": "string" }
+              }
+            }
+          },
+          "rationale": { "type": "string", "description": "Deterministic reason this was flagged." },
+          "source_lessons": { "type": "array", "items": { "type": "string" } },
+          "why_downstream": { "type": "string", "description": "How this finding hurts a downstream reproducibility run." },
+          "target_form": { "type": "string", "description": "What the corrected code should look like." },
+          "rewrite": {
+            "type": "object",
+            "required": ["mode", "fix_prompt"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": ["llm_rewrite", "propose_only"],
+                "description": "llm_rewrite = host LLM may apply the fix to a copy; propose_only = describe to author, never auto-edit."
+              },
+              "lossless_note": { "type": "string", "description": "Per-rule semantics-preserving boundary for the rewrite." },
+              "fix_prompt": { "type": "string", "description": "Self-contained natural-language rewrite directive for the host LLM." }
+            }
+          }
+        }
+      }
+    }
+  }
+}
