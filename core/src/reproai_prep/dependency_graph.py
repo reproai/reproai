@@ -2,7 +2,13 @@ from __future__ import annotations
 
 # noqa: SIZE_OK -- legacy static graph extractor; splitting it is outside the private Prep repair.
 
-from typing import Any, override
+from typing import Any
+
+try:
+    from typing import override
+except ImportError:  # Python 3.10 and 3.11: the decorator only documents intent
+    def override(method):  # type: ignore[no-redef]
+        return method
 
 import ast
 import bisect
