@@ -9,6 +9,7 @@ own closing is the authority, and Prep only warns ahead of it.
 from __future__ import annotations
 
 import os
+import posixpath
 import re
 import unicodedata
 from pathlib import Path
@@ -32,6 +33,9 @@ _PACK_PROPOSAL = 10_000
 _TEXT_READ_CAP = 20_000_000
 
 _CHDIR = re.compile(r'\bsetwd\s*\(|\bchdir\s*\(')
+# a folder change that names its folder as a literal: setwd("x"), os.chdir("x")
+_CWD_LITERAL = re.compile(r'\b(?:setwd|chdir)\s*\(\s*[rRbBuU]{0,2}(["\'])((?:\\.|(?!\1)[^\\\n])*)\1\s*\)')
+_DEPENDENCY_ROOT = ".certified/deps/"
 _ADDRESS = re.compile(r'^(?:https?|ftp)://', re.IGNORECASE)
 _NET_READ_CALL = re.compile(
     r'(?<![\w])(?:read\.\w+|read_\w+|fread|vroom|source|load|readRDS|readLines|scan|download\.file|curl_download'
@@ -142,17 +146,33 @@ def _line_hits(root: Path, scripts: list[FileEntry], patterns: dict[str, re.Patt
     return hits
 
 
-def _is_outside(target: str) -> bool:
-    return (target.startswith(("/", "~", "\\\\")) or "://" in target or bool(re.match(r'^[A-Za-z]:', target))
-            or target == ".." or target.startswith("../"))
+def _plain(reference: str) -> str:
+    return posixpath.normpath(reference[2:] if reference.startswith("./") else reference)
 
 
-def _literal_calls(root: Path, e: FileEntry):
-    """(class, literal target, line, line text) for each read/include/write call with a literal path."""
+def _absolute(reference: str) -> bool:
+    """A path no change of folder makes relative: absolute, home, drive, network share or address
+    (backslashes already turned into slashes)."""
+    return reference.startswith(("/", "~")) or "://" in reference or bool(re.match(r'^[A-Za-z]:/', reference))
+
+
+def _leaves(reference: str) -> bool:
+    """Outside the dataset as read from the root: one of the above, or a climb above the root."""
+    if _absolute(reference):
+        return True
+    plain = _plain(reference)
+    return plain == ".." or plain.startswith("../")
+
+
+def _literal_calls(root: Path, e: FileEntry, whole: bool = False):
+    """(class, literal target, line, line text) for each read/include/write call with a literal path;
+    with `whole`, only calls whose path is the whole first argument, not a fragment of one being built."""
     text = read_source(root, e.path)
     clean = dg._strip_line_comments(text)
     lines = text.splitlines()
     for m in dg._VERB_RE.finditer(clean):
+        if whole and not dg._first_argument_is_literal(clean, m.end()):
+            continue
         klass = dg._VERB_CLASS[m.group(1)]
         target = dg._pick_filename(dg._call_literals(clean, m.end() - 1), dg._EXT_BY_CLASS[klass])
         if target is None:
@@ -179,44 +199,100 @@ def _cf2_cf3(files: list[str]) -> dict[str, tuple[list[dict[str, Any]], str]]:
                                       f"{len(notebooks)} notebook(s) beside {len(scripts)} script(s); notebooks are not run.")}
 
 
-def _cf4_cf22(root: Path, scripts: list[FileEntry], texts: dict[str, str]) -> dict[str, list[dict[str, Any]]]:
+def _moved(scripts: list[FileEntry], texts: dict[str, str], edges: list[Edge]) -> set[str]:
+    """Scripts that run from a folder they or a script sourcing them moved to: their paths are
+    left to closing, which sees where the run stands."""
+    moved = {e.path for e in scripts if _CHDIR.search(dg._strip_line_comments(texts[e.path]))}
+    grew = True
+    while grew:
+        grew = False
+        for edge in edges:
+            if edge.kind in {"source", "import"} and edge.resolved and edge.src in moved and edge.dst not in moved:
+                moved.add(edge.dst)
+                grew = True
+    return moved
+
+
+def _cf4_cf22(root: Path, scripts: list[FileEntry], texts: dict[str, str],
+              edges: list[Edge]) -> dict[str, list[dict[str, Any]]]:
     from_script: list[dict[str, Any]] = []
     missing_folder: list[dict[str, Any]] = []
     makes_folders = any(_MAKES_FOLDERS.search(t) for t in texts.values())
+    moved = _moved(scripts, texts, edges)
     for e in scripts:
-        if _CHDIR.search(dg._strip_line_comments(texts[e.path])):
+        if e.path in moved:
             continue
-        script_dir = Path(e.path).parent
+        here = posixpath.dirname(e.path)
         for klass, target, number, line in _literal_calls(root, e):
-            if _is_outside(target) or target.startswith("./"):
+            if _absolute(target) or target.startswith("./"):
                 continue
-            from_root = root / target
-            beside = root / script_dir / target
+            # where the path lands read from the root (every step starts there), and from the script's folder
+            at_root = None if _leaves(target) else _plain(target)
+            beside = posixpath.normpath(posixpath.join(here, target))
+            beside = None if not here or _leaves(beside) else beside
             if klass in {"read", "include"}:
-                if script_dir != Path(".") and beside.is_file() and not from_root.is_file():
+                if beside and (root / beside).is_file() and not (at_root and (root / at_root).is_file()):
                     from_script.append(_ev(e.path, number, line))
                 continue
-            folder = Path(target).parent
-            if folder == Path("."):
+            folder = posixpath.dirname(target)
+            if folder in ("", "."):
                 continue
-            if script_dir != Path(".") and beside.parent.is_dir() and not from_root.parent.is_dir():
+            if beside and (root / beside).parent.is_dir() and not (at_root and (root / at_root).parent.is_dir()):
                 from_script.append(_ev(e.path, number, line))
-            elif not from_root.parent.is_dir() and not makes_folders:
+            elif not (at_root and (root / at_root).parent.is_dir()) and not makes_folders:
                 missing_folder.append(_ev(e.path, number, line))
     return {"CF4-path-from-script-folder": from_script, "CF22-output-folder-missing": missing_folder}
 
 
-def _cf5_cf6(root: Path, scripts: list[FileEntry]) -> dict[str, list[dict[str, Any]]]:
-    climbs: list[dict[str, Any]] = []
+def _cf5(root: Path, scripts: list[FileEntry], files: list[str]) -> list[dict[str, Any]]:
+    """Reads, sources and folder changes that point outside the dataset, judged the way closing's
+    reading audit judges them: only the path a read or a folder change names (not any string), read
+    from the folder an earlier setwd()/chdir() moved to, then from the root, then from the script's
+    own folder; outside only when none of those lands on a deposited file or folder."""
+    present = set(files)
+    folders = {""} | {posixpath.dirname(f) for f in files}
+    for f in list(folders):
+        while f:
+            f = posixpath.dirname(f)
+            folders.add(f)
+    evidence: list[dict[str, Any]] = []
+    for e in scripts:
+        text = read_source(root, e.path)
+        clean = dg._strip_line_comments(text)
+        lines = text.splitlines()
+        here = posixpath.dirname(e.path)
+        events = [(dg._line_of(clean, m.start()), 0, "folder", m.group(2).strip().replace("\\", "/"))
+                  for m in _CWD_LITERAL.finditer(clean)]
+        events += [(number, 1, "read", target) for klass, target, number, _ in _literal_calls(root, e, whole=True)
+                   if klass in {"read", "include"}]
+        moved_to: str | None = None
+        for number, _, kind, reference in sorted(events):
+            if "://" in reference:
+                continue                                       # an address: CF6
+            from_root = reference if moved_to is None or _absolute(reference) else posixpath.join(moved_to, reference)
+            candidates = (_plain(from_root), posixpath.normpath(posixpath.join(here, from_root)))
+            line = lines[number - 1] if number <= len(lines) else ""
+            if kind == "folder":
+                if _leaves(from_root):
+                    evidence.append(_ev(e.path, number, line))
+                elif any(("" if c == "." else c) in folders for c in candidates if not _leaves(c)):
+                    moved_to = _plain(from_root)
+                continue
+            if any(c in present for c in candidates) or _plain(from_root).startswith(_DEPENDENCY_ROOT):
+                continue
+            if _leaves(from_root):
+                evidence.append(_ev(e.path, number, line))
+    return evidence
+
+
+def _cf6(root: Path, scripts: list[FileEntry]) -> list[dict[str, Any]]:
     network: list[dict[str, Any]] = []
     for e in scripts:
         for number, line, code in _code_lines(read_source(root, e.path), e.language):
-            literals = [m.group(0)[1:-1].replace("\\\\", "/").replace("\\", "/") for m in _STR_SPAN.finditer(code)]
-            if any(lit == ".." or (lit.startswith("../") and not lit.startswith("../../")) for lit in literals):
-                climbs.append(_ev(e.path, number, line))
+            literals = [m.group(0)[1:-1] for m in _STR_SPAN.finditer(code)]
             if any(_ADDRESS.match(lit) for lit in literals) and _NET_READ_CALL.search(code):
                 network.append(_ev(e.path, number, line))
-    return {"CF5-climb-above-root": climbs, "CF6-network-read": network}
+    return network
 
 
 def _cf7(root: Path, scripts: list[FileEntry]) -> tuple[list[dict[str, Any]], str]:
@@ -294,8 +370,10 @@ def _cf10_cf11(root: Path, files: list[str]) -> dict[str, list[dict[str, Any]]]:
     return {"CF10-startup-file": _file_evidence(startup), "CF11-reserved-name": _file_evidence(reserved)}
 
 
-def _cf13(root: Path, edges: list[Edge], texts: dict[str, str]) -> list[dict[str, Any]]:
-    evidence: list[dict[str, Any]] = []
+def _cf13_cf24(root: Path, edges: list[Edge], texts: dict[str, str]) -> dict[str, list[dict[str, Any]]]:
+    """A text file that is not UTF-8, read without naming its encoding: R reads on and garbles the
+    characters (CF13), Python stops with a decode error (CF24), since the runs read text as UTF-8."""
+    out: dict[str, list[dict[str, Any]]] = {"CF13-non-utf8-text-read": [], "CF24-non-utf8-text-read-python": []}
     readers: dict[str, list[str]] = {}
     for edge in edges:
         if edge.edge_class == "read" and edge.resolved and edge.dst.lower().endswith(_TEXT_DATA_SUFFIXES):
@@ -304,9 +382,11 @@ def _cf13(root: Path, edges: list[Edge], texts: dict[str, str]) -> list[dict[str
         if _is_utf8(root / data_path):
             continue
         undeclared = sorted({s for s in sources if s in texts and not _ENCODING_ARG.search(texts[s])})
-        if undeclared:
-            evidence.append(_ev(data_path, None, f"not UTF-8; read by {', '.join(undeclared)} with no encoding named"))
-    return evidence
+        for rule_id, wanted in (("CF13-non-utf8-text-read", False), ("CF24-non-utf8-text-read-python", True)):
+            by = [s for s in undeclared if s.lower().endswith(".py") is wanted]
+            if by:
+                out[rule_id].append(_ev(data_path, None, f"not UTF-8; read by {', '.join(by)} with no encoding named"))
+    return out
 
 
 def _is_utf8(path: Path) -> bool:
@@ -374,11 +454,12 @@ def detect(root: Path, entries: list[FileEntry], edges: list[Edge]) -> dict[str,
 
     put("CF1-stata-not-runnable", *_cf1(files))
     out.update(_cf2_cf3(files))
-    for rule_id, evidence in _cf4_cf22(root, scripts, texts).items():
+    for rule_id, evidence in _cf4_cf22(root, scripts, texts, edges).items():
         put(rule_id, evidence, f"{len(evidence)} path(s) that fail when every step starts at the root."
             if rule_id.startswith("CF4") else f"{len(evidence)} write(s) into a folder that neither ships nor is created.")
-    for rule_id, evidence in _cf5_cf6(root, scripts).items():
-        put(rule_id, evidence, f"{len(evidence)} reference(s) outside the deposited files.")
+    put("CF5-outside-reference", _cf5(root, scripts, files),
+        "Reads or folder changes that point outside the dataset, however the run's folder is reckoned.")
+    put("CF6-network-read", _cf6(root, scripts), "Reads from a web address; the runs have no network.")
     put("CF7-outside-service", *_cf7(root, scripts))
     put("CF8-tree-paths", *_cf8(files, empty, links))
     put("CF9-installation-folder", *_cf9(root, files))
@@ -386,8 +467,8 @@ def detect(root: Path, entries: list[FileEntry], edges: list[Edge]) -> dict[str,
         put(rule_id, evidence, f"{len(evidence)} file(s) closing refuses.")
     put("CF12-runtime-cache-write", _line_hits(root, r_scripts, {"r": _R_CACHE_WRITE}),
         "Writes R's workspace or history file, which fails the step.")
-    put("CF13-non-utf8-text-read", _cf13(root, edges, texts),
-        "Text data in another encoding, read without naming it; the runs read UTF-8.")
+    for rule_id, evidence in _cf13_cf24(root, edges, texts).items():
+        put(rule_id, evidence, "Text data in another encoding, read without naming it; the runs read UTF-8.")
     put("CF14-runtime-install", _line_hits(root, scripts, {"r": _R_INSTALL, "python": _PY_INSTALL}),
         "Installs a package while running; the runs have no network.")
     put("CF15-interactive-call", _line_hits(root, scripts, {"r": _R_INTERACTIVE, "python": _PY_INTERACTIVE}),

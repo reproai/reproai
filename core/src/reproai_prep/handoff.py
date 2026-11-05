@@ -28,7 +28,7 @@ _R_SHIPPED = {
 _R_PACMAN = re.compile(r'\bp_load\s*\(([^)]*)\)')
 _R_NAMESPACED = re.compile(r'(?<![\w.])([A-Za-z][\w.]*)::')
 _PY_IMPORT = re.compile(r'^\s*(?:import\s+([\w.]+(?:\s*,\s*[\w.]+)*)|from\s+([\w.]+)\s+import\b)')
-_OUTSIDE_FILE_RULES = ("B4-no-abs-paths", "CF5-climb-above-root", "CF6-network-read", "A14-missing-input")
+_OUTSIDE_FILE_RULES = ("B4-no-abs-paths", "CF5-outside-reference", "CF6-network-read", "A14-missing-input")
 _LEAVE_OUT_RULES = ("CF9-installation-folder", "CF10-startup-file")
 _NOTEBOOK_RULES = ("CF2-notebook-only", "CF3-notebook-not-run")
 

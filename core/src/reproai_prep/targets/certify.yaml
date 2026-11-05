@@ -13,7 +13,7 @@
 #   note      -- `certify targets` or closing prints a note; a repair to propose
 target: certify
 name: IQSS Certify
-profile_version: "2026.11.05"
+profile_version: "2026.11.05.1"
 basis:
   author_program: "0.2.0"
   rulebook: "0.2.0"
@@ -88,17 +88,17 @@ rules:
     propose_only: true
     output_changing: false
 
-  - id: CF5-climb-above-root
+  - id: CF5-outside-reference
     category: structural
     kind: defect
     priority: P0
     certify_effect: refuse
-    certify_basis: "rulebook audit.is_outside: a reference that normalizes to .. or starts with ../ leaves the dataset (refusal i)"
-    rule: "No path may climb above the dataset's root, not even one level ('../data/x.csv')."
-    detection: "A quoted path starting with exactly one ../ (or ..\\, or equal to ..) on a code line of an R or Python script. Two or more levels are B4's case."
+    certify_basis: "rulebook audit: a read's path or a folder change is resolved from the folder an earlier change moved to, then from the root, then from the script's folder; one that lands on no deposited file and is absolute, a home path, a drive, a share or climbs above the root is an undeclared external reference (refusal i)"
+    rule: "No read and no change of folder may point outside the dataset: no absolute, home, drive-letter or network-share path, and no climb above the root that does not land back on a deposited file or folder."
+    detection: "The path a read or source call names, or a literal setwd()/os.chdir() folder, in an R or Python script, resolved as closing's audit resolves it (from an earlier folder change, the root, or the script's folder); flagged only when no resolution lands on a deposited file or folder. Other strings (a gsub() pattern, na.strings = '..') are not paths. Addresses are CF6's."
     languages: [r, python]
-    why_downstream: "Closing refuses with '(i) undeclared external reference': runs start at the root, so ../ points outside the deposited files."
-    target_form: "Spell the path from the root ('data/x.csv'), or remove the setwd()/os.chdir() that made ../ necessary."
+    why_downstream: "Closing refuses with '(i) undeclared external reference': the certified files are all the run can read."
+    target_form: "Copy the file into the prepared copy and spell its path from the root ('data/x.csv'), or declare a file with a public address (`certify declare`, read from .certified/deps/<path>); drop a setwd() to a folder outside the dataset."
     lossless_note: "Propose-only: the right root-relative path depends on where the run starts."
     propose_only: true
     output_changing: false
@@ -212,13 +212,13 @@ rules:
     category: environment
     kind: defect
     priority: P2
-    certify_effect: run_fails
-    certify_basis: "rulebook settings.frozen_settings: LC_ALL=C.UTF-8, PYTHONUTF8=1; instructions 'Things learned the hard way'"
-    rule: "A text data file that is not UTF-8 must be read with its encoding named: the certified runs read text as UTF-8."
-    detection: "A shipped .csv/.tsv/.txt file read by a script is not valid UTF-8, and no fileEncoding=/encoding= appears in the reading script."
-    languages: [r, python]
-    why_downstream: "The read fails or garbles characters (a decode error in Python, mis-read strings in R), so outputs differ or the step fails."
-    target_form: "Name the encoding where the file is read: read.csv(\"x.csv\", fileEncoding = \"latin1\") in R, pd.read_csv(\"x.csv\", encoding=\"latin-1\") in Python."
+    certify_effect: warning
+    certify_basis: "rulebook settings.frozen_settings: LC_ALL=C.UTF-8; a package that read Latin-1 text in R without naming it was certified (October test bench)"
+    rule: "An R script should name the encoding of a text data file that is not UTF-8: the certified runs read text as UTF-8."
+    detection: "A shipped .csv/.tsv/.txt file read by an R script is not valid UTF-8, and no fileEncoding=/encoding= appears in that script."
+    languages: [r]
+    why_downstream: "R reads on, but accented and other non-ASCII characters come out garbled, so labels or text-derived results can differ from the author's."
+    target_form: "Name the encoding where the file is read: read.csv(\"x.csv\", fileEncoding = \"latin1\")."
     lossless_note: "Naming the file's true encoding reads the same characters the author saw."
     propose_only: true
     output_changing: false
@@ -373,14 +373,27 @@ rules:
     propose_only: true
     output_changing: false
 
+  - id: CF24-non-utf8-text-read-python
+    category: environment
+    kind: defect
+    priority: P0
+    certify_effect: run_fails
+    certify_basis: "rulebook settings.frozen_settings: PYTHONUTF8=1, LC_ALL=C.UTF-8"
+    rule: "A Python script must name the encoding of a text data file that is not UTF-8: the certified runs read text as UTF-8."
+    detection: "A shipped .csv/.tsv/.txt file read by a Python script is not valid UTF-8, and no encoding= appears in that script."
+    languages: [python]
+    why_downstream: "The read stops with a UnicodeDecodeError, which fails the step."
+    target_form: "Name the encoding where the file is read: pd.read_csv(\"x.csv\", encoding=\"latin-1\"), open(\"x.txt\", encoding=\"latin-1\")."
+    lossless_note: "Naming the file's true encoding reads the same characters the author saw."
+    propose_only: true
+    output_changing: false
+
 # Generic-rule advice that is wrong or incomplete for Certify. `suppress` drops the finding under
 # this target (another rule above covers it); the text fields replace the generic ones; `certify_effect`
 # and `priority` say what Certify does with the finding when it is more than the generic rule says.
 overrides:
   B4-no-abs-paths:
-    certify_effect: refuse
-    priority: P0
-    target_form: "Copy the file into the prepared copy and spell its path from the root, or, for a file with a public https address, declare it with `certify declare` (written to .certified/deps.txt) and read it from .certified/deps/<path>. Certify refuses any absolute path, home path (~), drive letter or climb above the root."
+    target_form: "Spell paths from the root. Certify refuses a read or a folder change that points outside the dataset (CF5, judged as its audit resolves paths); a written path or other string is not refused but still ties the code to one machine. A file from outside: copy it into the prepared copy, or declare one with a public address (`certify declare`)."
   C1-pin-deps:
     target_form: "Under certification nothing installs at run time: `certify vendor` copies the exact installed library versions into .certified/lib/. Record the versions in the README (sessionInfo(), pip freeze) as documentation; do not add install lines."
   C7-nonreproducible-parallel-rng:

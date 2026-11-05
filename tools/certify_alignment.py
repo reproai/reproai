@@ -48,14 +48,15 @@ _MESSAGES = (
 _ENVIRONMENT = ("worker processes that talk over local sockets", "proxy settings alone", "is not installed", "not found")
 # rules Certify enforces only when closing (the audit's refusals, the runs): `targets` cannot show them
 CLOSING_ONLY = {
-    "CF4-path-from-script-folder", "CF5-climb-above-root", "CF6-network-read", "CF7-outside-service",
+    "CF4-path-from-script-folder", "CF5-outside-reference", "CF6-network-read", "CF7-outside-service",
     "CF10-startup-file", "CF11-reserved-name", "CF12-runtime-cache-write", "CF13-non-utf8-text-read",
+    "CF24-non-utf8-text-read-python",
     "CF16-hook-dropping-launch", "CF17-remote-launch", "CF18-certification-setting-named",
     "CF19-unremappable-seed", "CF20-socket-workers", "CF21-forked-workers-default-rng",
     "CF22-output-folder-missing", "CF3-notebook-not-run",
-    # generic rules whose findings the profile gives an effect: the reading audit's refusal of an
-    # outside reference, and a run that fails on a file the package does not hold
-    "B4-no-abs-paths", "A14-missing-input",
+    # a generic rule whose findings the profile gives an effect: a run that fails on a file the
+    # package does not hold
+    "A14-missing-input",
 }
 
 

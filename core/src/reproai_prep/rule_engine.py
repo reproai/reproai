@@ -27,15 +27,15 @@ _RULES_FILE = Path(__file__).parent / "rules" / "author_rules.yaml"
 # `"Jones:\nmore"` — where the letter before the colon is part of an English word — does not
 # (issue #46: `word:\n` was mis-read as a `word:` drive). `\` after the drive must also start a
 # path character, not an escape terminator.
-_ABS_PATH = re.compile(r'["\']?((?:(?<![A-Za-z])[A-Za-z]:[\\/](?=[\w.])|' + _UNC_ABS + r'|/Users/|/home/|~/)[^"\'\r\n]+)["\']?')
+_ABS_PATH = re.compile(r'["\']?((?:(?<![A-Za-z])[A-Za-z]:[\\/](?=[\w.])|(?<=["\'])' + _UNC_ABS + r'|/Users/|/home/|~/)[^"\'\r\n]+)["\']?')
 # R and Python strings escape the backslash, so there a network share is spelled with four
 # ("\\\\server\\share") and a drive root as "C:\\dir"; two backslashes are one escaped backslash
 # ("\\hline\n", "^\\d\\d"), never a share. A drive root with one backslash (a raw string) or a
-# forward slash still counts.
+# forward slash still counts. In every language a share opens its string: "\\{\\\\dagger\\}" is LaTeX.
 _ABS_PATH_ESCAPED = re.compile(r'["\']?((?:(?<![A-Za-z])[A-Za-z]:(?:\\{1,2}|/)(?=[\w.])'
-                               r'|\\{4}[\w][\w.-]*(?:\\{2}|/)|/Users/|/home/|~/)[^"\'\r\n]+)["\']?')
+                               r'|(?<=["\'])\\{4}[\w][\w.-]*(?:\\{2}|/)|/Users/|/home/|~/)[^"\'\r\n]+)["\']?')
 # A quoted `../..` climb is the same escape as an absolute path — the certification audit's
-# _is_escape treats a normalized target starting with `..` as leaving the replication dataset (Sahn 2025:
+# _is_escape treats a normalized target starting with `..` as leaving the replication dataset (a real package:
 # `read("../../../data/analysis_data.Rdata")` from a script three folders deep). One `..` from a
 # subfolder script is ordinary and stays inside; the climb has to be at least two levels.
 _PARENT_ESCAPE = re.compile(r'["\']((?:\.\./){2,}[^"\'\r\n]*)["\']')
@@ -1685,8 +1685,8 @@ def run(root: Path, entries: list[FileEntry], edges: list[Edge], table_exports) 
     # The certification line picks entry points with dependency_graph.entry_points and, finding
     # none, runs every script in a guessed order. A package with SOME call edges but no single
     # script that reaches the rest is in the same position as one with none — the old
-    # `not callers` test only saw the latter (Tajima 2013: three scripts each `do` one helper,
-    # nothing ties the eight together; Urpelainen 2022: 26 scripts, two call edges).
+    # `not callers` test only saw the latter (real packages: three scripts that each `do` one
+    # helper, nothing tying the eight together; 26 scripts with two call edges).
     _entry = [p["path"] for p in dependency_graph.entry_points(entries, edges)]
     if len(script_paths) > 1 and (not callers or len(_entry) != 1):
         emit("A1-master-entry", [_ev(p) for p in sorted(texts)][:1],

@@ -81,9 +81,9 @@ check`, `fix`, `rehearse`, `note` and `handoff`.
 
 [Certify](https://certify.iq.harvard.edu) certifies a replication dataset at publication. Its
 closing refuses packages that break its entry contract, and some breaks only show after a long
-run. `reproai check <ROOT> --target certify` checks that contract statically first: 23 rules
+run. `reproai check <ROOT> --target certify` checks that contract statically first: 24 rules
 read from Certify 0.2.0's published program (Stata scripts, notebooks-only code, paths written
-from a script's folder or climbing above the root, network reads, outside services, startup
+from a script's folder or pointing outside the dataset, network reads, outside services, startup
 files, run-time installs, interactive calls, cluster launchers, seeding forms Certify cannot
 re-map, socket and forked workers, missing output folders, file-tree problems, entry counts).
 It also re-words the generic advice Certify contradicts (doRNG, install lines, outside files)

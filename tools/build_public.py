@@ -82,6 +82,16 @@ def _scrub_rules(internal: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# The same names written as a citation: a surname, a space and a year, with or without "et al." or parentheses.
+_PAPER_CITATION = re.compile(r"\b([A-Z][a-z]{2,})(?: et al\.?)? \(?(?:19|20)\d{2}[a-z]?\b")
+_NOT_AUTHORS = {
+    "January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
+    "November", "December", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", "Stata", "Python",
+    "Copyright", "Certify", "Version", "Since", "Before", "After", "From", "Until", "Round", "Spring",
+    "Summer", "Fall", "Autumn", "Winter",
+}
+
+
 def _has_paper_name(text: str) -> list[str]:
     hits = []
     for m in _PAPER_NAME.finditer(text):
@@ -89,6 +99,7 @@ def _has_paper_name(text: str) -> list[str]:
         if tok in _ALLOWED_TOKENS:
             continue
         hits.append(tok)
+    hits += [m.group(0) for m in _PAPER_CITATION.finditer(text) if m.group(1) not in _NOT_AUTHORS]
     return hits
 
 
