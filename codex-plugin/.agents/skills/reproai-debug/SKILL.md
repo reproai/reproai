@@ -1,14 +1,15 @@
 ---
 name: reproai-debug
-description: Trial-run a replication package (on a COPY) as a smoke test — confirm the code runs without errors and that the injected Table/Figure output commands actually produced files. On a runtime error it does NOT auto-fix; it explains the root cause, offers a few fix options, and asks the author to choose, then applies the chosen fix and re-runs. It executes code but never compares coefficients and never issues a reproducibility verdict. Use after reproai-fix.
+description: Rehearse a replication package on a COPY the way a certification service will (R and Python run twice under fixed settings and the outputs compared; Stata run once) — confirm the code runs without errors, that the Table/Figure output commands actually produced files, and whether two runs agree. On a runtime error it does NOT auto-fix; it explains the root cause, offers a few fix options, and asks the author to choose, then applies the chosen fix and re-runs. It executes code but never compares coefficients and never issues a reproducibility verdict. Use after reproai-fix.
 ---
 
-# reproai debug — smoke-test the package, author decides every fix (Codex)
+# reproai debug — rehearse the package on a copy, author decides every fix (Codex)
 
-This is the one reproai workflow that **runs the author's code** — a **smoke test**: confirm
+This is the one reproai workflow that **runs the author's code** — a **rehearsal**: confirm
 (a) the package runs end-to-end without errors, and (b) the output commands (especially the ones
 `reproai-fix` injected for D1) actually wrote their tables/figures to `output/tables` /
-`output/figures`. Then surface the generated artifacts for the author's eyeball test.
+`output/figures`, and, for R and Python, whether two runs under a certification service's settings
+write the same outputs. Then surface the generated artifacts for the author's eyeball test.
 
 **It does NOT**: compare coefficients to the paper; issue any "reproducible/verified" verdict;
 auto-fix errors silently. **Every fix is the author's decision.**
@@ -75,9 +76,9 @@ auto-fix errors silently. **Every fix is the author's decision.**
    artifact → step 4 (diagnose, ask author), fix, re-run, re-verify. Do not declare "tables and
    figures produced" yourself; `reproai verify` says so, or it isn't true.
 6. Hand the author (only after `reproai verify` exits 0): which scripts ran clean, the generated
-   tables/figures (paths), the fixes applied (and which option they chose), and: "This is a smoke
-   test — the code runs and emits its artifacts. NOT a reproducibility verdict; eyeball against the
-   paper."
+   tables/figures (paths), the fixes applied (and which option they chose), the rehearsal grade if
+   R or Python was rehearsed, and: "This is a rehearsal — the code runs and emits its artifacts. NOT
+   a reproducibility verdict; eyeball against the paper."
 
 ## Hard rules
 

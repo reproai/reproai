@@ -17,7 +17,7 @@
  *     version: "0.4.0"  | "Initial release",   // shown as-is; numbers are prefixed "v" by the page
  *     date:    "June 17, 2026",
  *     title:   "one-line theme of the release", // optional
- *     changes: [{ tag: "New" | "Improved" | "Fixed", text: "..." }],
+ *     changes: [{ tag: "New" | "Improved" | "Fixed" | "Removed" | "Thanks", text: "..." }],
  *   }
  *   In `text`, wrap a `command` or `path` in backticks to render it as monospace code.
  */
@@ -26,10 +26,130 @@ export const changelog = {
   head: {
     lead: "What's",
     emphasis: "new",
-    sub: "Every ReproAI release, newest first. The plugin's underlying rule set also keeps evolving as more replication packages are seen; run `/reproai:update` to check your version and how to update.",
+    sub: "Every ReproAI Prep release, newest first; releases before 0.8 shipped under the name ReproAI. The rule set keeps evolving as more replication packages are seen; run `/reproai:update` to check your version and how to update.",
   },
 
   releases: [
+    {
+      version: "0.8.1",
+      date: "November 5, 2026",
+      title: "The Certify target reads paths the way Certify does, so it no longer calls a package blocked over paths Certify accepts.",
+      changes: [
+        {
+          tag: "Fixed",
+          text: "A path counts as outside the dataset only the way Certify's own reading audit counts it: the path a read, a `source()` or a folder change names, resolved from the folder an earlier `setwd()` moved to, then from the package root, then from the script's folder. A pattern inside `gsub()`, `na.strings = \"..\"`, or a fragment of a path still being assembled no longer counts.",
+        },
+        {
+          tag: "Fixed",
+          text: "A general path-style warning no longer blocks a package under the Certify target; the refusal belongs to the outside-the-dataset check above. LaTeX markup written with doubled backslashes in R or Python strings, such as a dagger in a table note, is no longer mistaken for a network-share path.",
+        },
+        {
+          tag: "New",
+          text: "A script in a subfolder that reads `../data/x.csv` is flagged under the Certify target: Certify runs every script from the package root, where that path leads nowhere.",
+        },
+        {
+          tag: "Improved",
+          text: "A text file in a non-UTF-8 encoding read without naming its encoding is a warning in R (it reads on and garbles the characters) and a run failure in Python (the decode error stops the step).",
+        },
+        {
+          tag: "Fixed",
+          text: "The engine starts on Python 3.10 and 3.11 again.",
+        },
+      ],
+    },
+    {
+      version: "0.8.0",
+      date: "November 5, 2026",
+      title: "ReproAI is now ReproAI Prep, by Leo Yang Yang and Yiqing Xu, with IQSS Certify as a target and a rehearsal that runs your package the way a certification service will.",
+      changes: [
+        {
+          tag: "New",
+          text: "The new name is ReproAI Prep. The Python package is `reproai-prep`; the command stays `reproai` and the slash commands stay `/reproai:*`, so nothing you type changes. Cite it with the software reference at the bottom of the home page.",
+        },
+        {
+          tag: "New",
+          text: "`--target certify` checks a package against IQSS Certify's entry requirements before you start Certify: rules read from Certify's published program for paths outside the dataset, network reads, outside services, startup files, run-time installs, interactive calls, seeding Certify cannot re-map, missing output folders, file-tree problems and more. Each finding names its effect at Certify (refuse, run fails, mark, warning, note), and `target_readiness_report.json` sums it up: blocked, needs attention, or no static obstacle. Generic advice that Certify contradicts, such as install lines or files kept outside the package, is reworded for Certify.",
+        },
+        {
+          tag: "New",
+          text: "`reproai rehearse`, driven by `/reproai:debug`, runs a copy of your package twice the way a certification service will: from the root, with the network blocked as far as your machine allows, a private empty home folder, a fixed time zone and locale, figures written to files and every step seeded. It then compares the outputs: identical, numerically close, or different, naming the files that moved. R and Python are rehearsed; your original is never run.",
+        },
+        {
+          tag: "New",
+          text: "`/reproai:prepare` goes from a messy folder to a prepared copy in one pass: check, the repairs you approve, a rehearsal with your permission, and a handoff. `reproai handoff` writes the run order, the libraries, what is still open and the next steps for your destination; `reproai note` records each approved repair in the copy's `CERTIFICATION-NOTES.txt`.",
+        },
+        {
+          tag: "New",
+          text: "Not on Claude Code or Codex? Fill in `PREP_INTAKE.txt` and paste it into any assistant that can run commands; `PREP_PROMPT.md` takes it through the same steps.",
+        },
+        {
+          tag: "Improved",
+          text: "Absolute-path detection reads R and Python strings with their escapes, so LaTeX and regular-expression strings are no longer taken for network shares, and a drive path written with forward slashes (`D:/data`) is caught in every language.",
+        },
+        {
+          tag: "Fixed",
+          text: "Stata `use cohort` without the `.dta` extension, and `use v1 v2 using x.dta`, resolve to the right file instead of a false missing input. Code written inside a string is no longer read as a call, and a file written through a variable that holds its path is no longer reported missing.",
+        },
+        {
+          tag: "Removed",
+          text: "The run-certificate experiment that began in 0.5, and the certificate pages on this site. ReproAI Prep prepares packages; certifying them is the certification service's own step.",
+        },
+      ],
+    },
+    {
+      version: "0.7.0",
+      date: "September 2, 2026",
+      title: "Checks for what breaks a closed, two-run certification, and Python coverage for randomness and missing inputs.",
+      changes: [
+        {
+          tag: "New",
+          text: "The clock, a date, or a temporary path written into an output file is flagged in Stata, R and Python: it makes two honest runs disagree.",
+        },
+        {
+          tag: "Improved",
+          text: "Unseeded randomness is caught in Python too (`random`, NumPy, PyTorch, scikit-learn's `random_state`), and a seed drawn from the clock or the process ID, such as `set.seed(as.numeric(Sys.time()))`, counts as no seed.",
+        },
+        {
+          tag: "New",
+          text: "A read whose path is assembled at run time (`paste0`, `file.path`, f-strings, `os.path.join`, or a `gzfile`, `unz` or `url` wrapper) is pointed out: no checker can follow it, so name the file directly where you can.",
+        },
+        {
+          tag: "New",
+          text: "A package larger than 1,000 MB is flagged before you deposit it.",
+        },
+        {
+          tag: "Improved",
+          text: "Missing inputs are found in Python as well: a literal `pd.read_csv` of a file the package does not ship is a blocker. A package with several unconnected entry scripts and no master script is flagged.",
+        },
+        {
+          tag: "Fixed",
+          text: "`do analysis` written without the `.do` suffix is followed as a call, so run-order, entry-point and orphan-file findings are right on packages written that way.",
+        },
+      ],
+    },
+    {
+      version: "0.6.0",
+      date: "September 1, 2026",
+      title: "Ship your Stata commands inside the package; don't install them at run time.",
+      changes: [
+        {
+          tag: "Improved",
+          text: "An `ssc install` line no longer counts as declaring a user-written Stata command. A certification run has no network, so the command has to ship inside the package.",
+        },
+        {
+          tag: "New",
+          text: "Run-time installs inside analysis scripts are flagged as blockers: `ssc install` and `net install` in Stata, `install.packages`, devtools, remotes and pak in R. Wrapping them in `capture` makes it worse: offline, the install fails silently and the script stops later at first use.",
+        },
+        {
+          tag: "New",
+          text: "An `adopath` or `sysdir` pointing outside the package (a home folder or an absolute path) is flagged.",
+        },
+        {
+          tag: "New",
+          text: "On an approved repair, the user-written Stata commands your package uses can be copied into an `ado/` folder of the prepared copy. The files to copy come from your installation's `stata.trk` manifest, so shared library files are found too; the install lines are rewritten, and the repair stops to ask you rather than leave a partial fix.",
+        },
+      ],
+    },
     {
       version: "0.4.10",
       date: "July 7, 2026",

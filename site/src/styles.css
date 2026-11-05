@@ -91,11 +91,13 @@ body {
 .red { color: var(--red); }
 
 /* hero */
+/* text starts beside the top of the workflow panel, so the buttons stay above the fold */
+.hero-left { padding-top: 56px; }
 .hero {
   display: grid;
   grid-template-columns: 1.05fr 1fr;
   gap: 60px;
-  align-items: center;
+  align-items: start;
   padding-top: 48px;
   padding-bottom: 100px;
 }
@@ -341,6 +343,7 @@ body {
 /* responsive */
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; gap: 40px; padding-bottom: 64px; }
+  .hero-left { padding-top: 0; }
   .hero h1 { font-size: 46px; }
   .cards.two, .cards.four { grid-template-columns: 1fr; }
   #cite .cards { grid-template-columns: 1fr; }
@@ -389,6 +392,7 @@ body {
 .pill.new { background: var(--red); }
 .pill.improved { background: var(--amber); }
 .pill.fixed { background: #64748b; }
+.pill.removed { background: #334155; }
 .pill.thanks { background: #0f766e; }
 .change-text { flex: 1; font-size: 15px; line-height: 1.62; color: var(--ink); }
 

@@ -1,20 +1,22 @@
 ---
 name: reproai-debug
-description: Trial-run a replication package (on a COPY) as a smoke test — confirm the code runs without errors and that the injected Table/Figure output commands actually produced files. On a runtime error it does NOT auto-fix; it explains the root cause, offers a few fix options, and asks the author to choose (AskUserQuestion), then applies the chosen fix and re-runs. It executes code but never compares coefficients and never issues a reproducibility verdict. Use after /reproai-fix to verify the fixed copy actually runs and emits its tables and figures.
+description: Rehearse a replication package on a COPY the way a certification service will (R and Python run twice under fixed settings and the outputs compared; Stata run once) — confirm the code runs without errors, that the Table/Figure output commands actually produced files, and whether two runs agree. On a runtime error it does NOT auto-fix; it explains the root cause, offers a few fix options, and asks the author to choose (AskUserQuestion), then applies the chosen fix and re-runs. It executes code but never compares coefficients and never issues a reproducibility verdict. Use after /reproai-fix to verify the fixed copy actually runs and emits its tables and figures.
 allowed-tools: Read, Grep, Bash, Edit, Write, AskUserQuestion
 ---
 
-# /reproai debug — smoke-test the package, author decides every fix
+# /reproai debug — rehearse the package on a copy, author decides every fix
 
 This is the one reproai command that **runs the author's code**. Its purpose is narrow and explicit:
-a **smoke test** — confirm (a) the package runs end-to-end without errors, and (b) the output
+a **rehearsal** — confirm (a) the package runs end-to-end without errors, and (b) the output
 commands (especially the ones `/reproai-fix` injected for D1) actually wrote their tables and figures
-to `output/tables` / `output/figures`. Then surface every generated table and figure for the author's
-eyeball test against the paper.
+to `output/tables` / `output/figures`, and, for R and Python, (c) whether two runs under a
+certification service's settings write the same outputs. Then surface every generated table and figure
+for the author's eyeball test against the paper.
 
 **What this command does NOT do** (still true, and important):
 - It does **not** compare coefficients to the paper.
-- It does **not** issue any "reproducible / verified / certified" verdict — that is Line 2.
+- It does **not** issue any "reproducible / verified / certified" verdict — that belongs to the
+  journal's check or a certification service such as IQSS Certify.
 - It does **not** auto-fix errors in a silent loop. **Every fix is the author's decision.**
 - It does **not** change a venue check's status. If you surface venue results and the author says
   they completed a `needs_author_action` item, record it as a NOTE only; the deterministic engine
@@ -99,13 +101,14 @@ eyeball test against the paper.
    elsewhere) → go to step 4 (diagnose, ask the author), fix, re-run, re-verify. Do not declare
    "tables and figures produced" on your own say-so — `reproai verify` says so, or it isn't true.
 
-6. **Hand the author the smoke-test result** (only after `reproai verify` exits 0):
+6. **Hand the author the rehearsal result** (only after `reproai verify` exits 0):
    - which scripts ran clean,
    - the list of generated tables (paths under `output/tables/`) and figures (`output/figures/`),
    - any fixes applied (and which option the author chose for each),
-   - an explicit note: "This is a smoke test — the code runs and emits its artifacts. It is NOT a
-     reproducibility verdict; eyeball the tables/figures against the paper, or send the package to
-     Line 2 for numerical certification."
+   - the rehearsal grade (identical, numerically close, different) when R or Python was rehearsed,
+   - an explicit note: "This is a rehearsal — the code runs and emits its artifacts. It is NOT a
+     reproducibility verdict; eyeball the tables/figures against the paper. Certification, if you
+     want it, is the certification service's own step."
 
 ## Hard rules
 

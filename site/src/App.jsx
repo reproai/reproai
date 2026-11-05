@@ -67,21 +67,15 @@ function EnginePanel() {
           )}
         </motion.div>
 
-        <motion.div className="engine-evolve" variants={item}>
-          <span className="evolve-dot" aria-hidden="true" />
-          <div className="evolve-text">
-            <code className="stage-cmd">{content.engine.map.cmd}</code>
-            <span className="evolve-note">{content.engine.map.note}</span>
-          </div>
-        </motion.div>
-
-        <motion.div className="engine-evolve" variants={item}>
-          <span className="evolve-dot" aria-hidden="true" />
-          <div className="evolve-text">
-            <code className="stage-cmd">{content.engine.update.cmd}</code>
-            <span className="evolve-note">{content.engine.update.note}</span>
-          </div>
-        </motion.div>
+        {content.engine.extras.map((x) => (
+          <motion.div className="engine-evolve" variants={item} key={x.cmd}>
+            <span className="evolve-dot" aria-hidden="true" />
+            <div className="evolve-text">
+              <code className="stage-cmd">{x.cmd}</code>
+              <span className="evolve-note">{x.note}</span>
+            </div>
+          </motion.div>
+        ))}
       </motion.div>
     </motion.div>
   );
@@ -285,10 +279,10 @@ function FAQ() {
   );
 }
 
-function Cite() {
+function CiteCard({ e }) {
   const c = content.cite;
   // the copy-button text is derived from the displayed BibTeX, so the two never drift
-  const bib = c.bibLines.map((line) => line.map((tok) => tok.t).join("")).join("\n");
+  const bib = e.bibLines.map((line) => line.map((tok) => tok.t).join("")).join("\n");
   const [copied, setCopied] = useState(false);
   const copy = () => {
     navigator.clipboard?.writeText(bib).then(() => {
@@ -297,23 +291,30 @@ function Cite() {
     });
   };
   return (
+    <div className="card">
+      <span className="redline" />
+      <div className="cite-label">{e.referenceLabel}</div>
+      <h3 className="cite-title">{e.title}</h3>
+      <p className="cite-meta">{e.meta}</p>
+      <a className="link" href={e.linkUrl}>{e.linkText}</a>
+      <div className="cite-bibtex">
+        <div className="cite-label-row">
+          <div className="cite-label">{c.bibtexLabel}</div>
+          <button className="copy" onClick={copy}>{copied ? c.copyDone : c.copyIdle}</button>
+        </div>
+        <Bib lines={e.bibLines} />
+      </div>
+    </div>
+  );
+}
+
+function Cite() {
+  const c = content.cite;
+  return (
     <section id="cite" className="section">
       <SectionHead lead={c.head.lead} emphasis={c.head.emphasis} sub={c.head.sub} />
       <div className="cards">
-        <div className="card">
-          <span className="redline" />
-          <div className="cite-label">{c.referenceLabel}</div>
-          <h3 className="cite-title">{c.title}</h3>
-          <p className="cite-meta">{c.meta}</p>
-          <a className="link" href={c.linkUrl}>{c.linkText}</a>
-          <div className="cite-bibtex">
-            <div className="cite-label-row">
-              <div className="cite-label">{c.bibtexLabel}</div>
-              <button className="copy" onClick={copy}>{copied ? c.copyDone : c.copyIdle}</button>
-            </div>
-            <Bib lines={c.bibLines} />
-          </div>
-        </div>
+        {c.entries.map((e) => <CiteCard e={e} key={e.referenceLabel} />)}
       </div>
     </section>
   );

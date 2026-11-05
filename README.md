@@ -6,9 +6,10 @@ By Leo Yang Yang and Yiqing Xu.
 replication package *before* you submit, so the downstream reproducibility check passes on
 the first try instead of bouncing back through round after round of fixes.
 
-ReproAI is a [Claude Code](https://docs.claude.com/en/docs/claude-code) / OpenAI Codex plugin.
+ReproAI Prep is a [Claude Code](https://docs.claude.com/en/docs/claude-code) / OpenAI Codex plugin.
 A deterministic engine decides what is wrong; the host LLM explains it, drafts the fixes, and —
-only when you ask — runs the package as a smoke test. Website: [reproai.org](https://reproai.org).
+only when you ask — rehearses a copy of the package the way a certification service will.
+Website: [reproai.org](https://reproai.org).
 
 ## What it does
 
@@ -35,8 +36,8 @@ You point it at a messy replication package (Stata / R / Python). It:
 
 > **Trust boundary.** ReproAI Prep never compares your coefficients to the paper and never issues a
 > "reproducible / certified" verdict — that is a separate downstream step. The static commands
-> (`check` / `comply` / `fix`) do not execute your code; only the opt-in `debug` command runs
-> it, and only as a smoke test (does it run, did the outputs appear).
+> (`check` / `comply` / `fix` / `map`) do not execute your code; only the opt-in rehearsal
+> (`debug`, `prepare` with your permission, or `reproai rehearse`) runs it, and only on a copy.
 
 ## Commands
 

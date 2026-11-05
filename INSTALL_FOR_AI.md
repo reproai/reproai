@@ -1,6 +1,6 @@
-# ReproAI — install instructions for an AI assistant
+# ReproAI Prep — install instructions for an AI assistant
 
-ReproAI is an author-facing pre-diagnose plugin for replication packages (Stata / R / Python),
+ReproAI Prep is an author-facing plugin that prepares replication packages (Stata / R / Python),
 backed by a small Python engine. **This file is the install procedure for an AI assistant to run.**
 Execute it deterministically: detect your host, run only that host's branch, then verify.
 
@@ -32,7 +32,7 @@ python3 -m pip install "git+https://github.com/reproai/reproai#subdirectory=core
 
 - `/plugin marketplace add …` — runs in Claude Code. Success: the `reproai` marketplace is registered.
 - `/plugin install reproai@reproai` — runs in Claude Code. Success: the `/reproai:*` commands appear.
-- `python3 -m pip install …` — runs in the user's shell. Success: pip reports the `reproai` engine installed.
+- `python3 -m pip install …` — runs in the user's shell. Success: pip reports `reproai-prep` installed and `reproai --version` runs.
 
 ## Step 2B — install in OpenAI Codex CLI
 
