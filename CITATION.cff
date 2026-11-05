@@ -7,7 +7,7 @@ authors:
     given-names: "Leo Yang"
   - family-names: Xu
     given-names: Yiqing
-version: 0.8.1
+version: 0.8.2
 license: MIT
 repository-code: "https://github.com/reproai/reproai"
 url: "https://reproai.org"

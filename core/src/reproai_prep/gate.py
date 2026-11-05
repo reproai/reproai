@@ -171,7 +171,7 @@ def expected_artifacts(root: Path) -> list[Artifact]:
         lines = text.splitlines()
         tbl_export = _PY_TABLE_EXPORT if is_py else _TABLE_EXPORT
         # Issue #51: a literal setwd("dir") in an R script relocates every later relative export;
-        # add that ONE explicit directory prefix so verify looks at `dir/tables|figures/...`.
+        # add that ONE explicit directory prefix so `outputs` looks at `dir/tables|figures/...`.
         sw_prefix = ""
         if e.language == "r":
             sw_prefix, _sw_dynamic = _literal_setwd_prefix(text)
@@ -249,7 +249,7 @@ def verify_runtime(root: Path, since_epoch: float | None = None) -> tuple[int, d
                "has_valid_export": a.has_valid_export, "files": detail, "produced": ok_any}
         (produced if ok_any else failed).append(rec)
     report = {
-        "gate": "verify",
+        "gate": "outputs",
         "expected_total": len(arts),
         "produced": len(produced),
         "not_produced": [r for r in failed],

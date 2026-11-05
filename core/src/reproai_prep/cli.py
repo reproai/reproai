@@ -206,7 +206,7 @@ def _cmd_gate(args: argparse.Namespace) -> int:
     return code
 
 
-def _cmd_verify(args: argparse.Namespace) -> int:
+def _cmd_outputs(args: argparse.Namespace) -> int:
     root = Path(args.path).resolve()
     if not root.is_dir():
         print(f"error: not a directory: {root}", file=sys.stderr)
@@ -215,14 +215,22 @@ def _cmd_verify(args: argparse.Namespace) -> int:
     if args.json:
         print(json.dumps(report, indent=2, ensure_ascii=False))
     else:
-        print(f"reproai verify (runtime artifacts) — {root}")
+        print(f"reproai outputs (runtime artifacts) — {root}")
         print(f"  expected: {report['expected_total']}  produced: {report['produced']}  "
               f"not produced: {len(report['not_produced'])}")
         for r in report["not_produced"]:
             print(f"  NOT PRODUCED  {r['artifact_id']:12s} [{r['kind']}]  {r['source_file']}"
                   f"  (valid_export={r['has_valid_export']})")
-        print(f"  VERIFY {'PASS' if report['passed'] else 'FAIL'} (exit {code})")
+        print(f"  OUTPUTS {'PASS' if report['passed'] else 'FAIL'} (exit {code})")
     return code
+
+
+def _cmd_verify_renamed(args: argparse.Namespace) -> int:
+    # `verify` is the old name of `outputs`, kept for one release: the name suggested a check of
+    # results against the paper, which Prep never makes.
+    print("note: `reproai verify` is now `reproai outputs`; the old name will be removed in a later "
+          "release.", file=sys.stderr)
+    return _cmd_outputs(args)
 
 
 def _cmd_map(args: argparse.Namespace) -> int:
@@ -400,11 +408,15 @@ def build_parser() -> argparse.ArgumentParser:
     gate.add_argument("--json", action="store_true", help="Print the full gate report as JSON.")
     gate.set_defaults(func=_cmd_gate)
 
-    verify = sub.add_parser("verify", help="HARD GATE: after running the package, exit nonzero unless every expected Table/Figure output file actually exists, is non-empty (and fresh with --since).")
-    verify.add_argument("path", help="Path to the (run) fixed copy of the replication package.")
-    verify.add_argument("--since", type=float, default=None, help="Epoch seconds; require artifacts modified at/after this time (run freshness).")
-    verify.add_argument("--json", action="store_true", help="Print the full verify report as JSON.")
-    verify.set_defaults(func=_cmd_verify)
+    for name, func, help_text in (
+        ("outputs", _cmd_outputs, "HARD GATE: after running the package, exit nonzero unless every expected Table/Figure output file actually exists, is non-empty (and fresh with --since)."),
+        ("verify", _cmd_verify_renamed, "Old name of `outputs`, kept for one release."),
+    ):
+        outputs = sub.add_parser(name, help=help_text)
+        outputs.add_argument("path", help="Path to the (run) fixed copy of the replication package.")
+        outputs.add_argument("--since", type=float, default=None, help="Epoch seconds; require artifacts modified at/after this time (run freshness).")
+        outputs.add_argument("--json", action="store_true", help="Print the full outputs report as JSON.")
+        outputs.set_defaults(func=func)
 
     mapper = sub.add_parser("map", help="ADVISORY: overlay a manuscript's figures/tables on the package's output nodes (outputs with no exhibit, exhibits with no output, panel mismatches). LaTeX-only; never a verdict, never in `check`.")
     mapper.add_argument("path", help="Path to the replication package working directory.")

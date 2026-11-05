@@ -1,6 +1,6 @@
 ---
 name: reproai-debug
-description: Rehearse a replication package on a COPY the way a certification service will (R and Python run twice under fixed settings and the outputs compared; Stata run once) — confirm the code runs without errors, that the Table/Figure output commands actually produced files, and whether two runs agree. On a runtime error it does NOT auto-fix; it explains the root cause, offers a few fix options, and asks the author to choose (AskUserQuestion), then applies the chosen fix and re-runs. It executes code but never compares coefficients and never issues a reproducibility verdict. Use after /reproai-fix to verify the fixed copy actually runs and emits its tables and figures.
+description: Rehearse a replication package on a COPY the way a certification service will (R and Python run twice under fixed settings and the outputs compared; Stata run once) — confirm the code runs without errors, that the Table/Figure output commands actually produced files, and whether two runs agree. On a runtime error it does NOT auto-fix; it explains the root cause, offers a few fix options, and asks the author to choose (AskUserQuestion), then applies the chosen fix and re-runs. It executes code but never compares coefficients and never issues a reproducibility verdict. Use after /reproai-fix to confirm the fixed copy actually runs and emits its tables and figures.
 allowed-tools: Read, Grep, Bash, Edit, Write, AskUserQuestion
 ---
 
@@ -91,17 +91,17 @@ for the author's eyeball test against the paper.
 5. **When the package runs clean, run the runtime HARD GATE (this is the completion authority):**
 
    ```bash
-   reproai verify <COPY> --since <RUN_START_EPOCH>; echo "verify exit: $?"
+   reproai outputs <COPY> --since <RUN_START_EPOCH>; echo "outputs exit: $?"
    ```
 
-   `reproai verify` deterministically checks that EVERY expected Table/Figure output file actually
+   `reproai outputs` deterministically checks that EVERY expected Table/Figure output file actually
    exists, is non-empty, and (with `--since`) was created during this run. It exits nonzero with the
-   `not_produced` list if any expected artifact is missing. **You are not done until `reproai verify`
+   `not_produced` list if any expected artifact is missing. **You are not done until `reproai outputs`
    exits 0.** Paste its output. A missing artifact means the output command didn't fire (or wrote
-   elsewhere) → go to step 4 (diagnose, ask the author), fix, re-run, re-verify. Do not declare
-   "tables and figures produced" on your own say-so — `reproai verify` says so, or it isn't true.
+   elsewhere) → go to step 4 (diagnose, ask the author), fix, re-run, re-check the outputs. Do not declare
+   "tables and figures produced" on your own say-so — `reproai outputs` says so, or it isn't true.
 
-6. **Hand the author the rehearsal result** (only after `reproai verify` exits 0):
+6. **Hand the author the rehearsal result** (only after `reproai outputs` exits 0):
    - which scripts ran clean,
    - the list of generated tables (paths under `output/tables/`) and figures (`output/figures/`),
    - any fixes applied (and which option the author chose for each),

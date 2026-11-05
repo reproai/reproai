@@ -31,6 +31,21 @@ export const changelog = {
 
   releases: [
     {
+      version: "0.8.2",
+      date: "November 6, 2026",
+      title: "The command that checks a run's output files is renamed for what it does.",
+      changes: [
+        {
+          tag: "Improved",
+          text: "`reproai verify` is renamed `reproai outputs`, for what it does: it checks that every expected table and figure file exists, is not empty and, with `--since`, was written by this run. It never compares results with the paper, which the old name suggested. `reproai verify` still works in this release and prints a note pointing to the new name.",
+        },
+        {
+          tag: "Improved",
+          text: "`/reproai:debug` calls `reproai outputs` after the rehearsal.",
+        },
+      ],
+    },
+    {
       version: "0.8.1",
       date: "November 5, 2026",
       title: "The Certify target reads paths the way Certify does, so it no longer calls a package blocked over paths Certify accepts.",

@@ -70,12 +70,12 @@ auto-fix errors silently. **Every fix is the author's decision.**
    e. Apply ONLY the chosen option, to the copy. Re-run from the failing script. Repeat step 4
       if it errors again.
 5. When the package runs clean, run the runtime HARD GATE (completion authority):
-   `reproai verify <COPY> --since <RUN_START_EPOCH>; echo "verify exit: $?"`. It checks every
+   `reproai outputs <COPY> --since <RUN_START_EPOCH>; echo "outputs exit: $?"`. It checks every
    expected Table/Figure output file exists, is non-empty, and is fresh; exits nonzero with the
    `not_produced` list otherwise. You are NOT done until it exits 0 — paste its output. A missing
-   artifact → step 4 (diagnose, ask author), fix, re-run, re-verify. Do not declare "tables and
-   figures produced" yourself; `reproai verify` says so, or it isn't true.
-6. Hand the author (only after `reproai verify` exits 0): which scripts ran clean, the generated
+   artifact → step 4 (diagnose, ask author), fix, re-run, re-check the outputs. Do not declare "tables and
+   figures produced" yourself; `reproai outputs` says so, or it isn't true.
+6. Hand the author (only after `reproai outputs` exits 0): which scripts ran clean, the generated
    tables/figures (paths), the fixes applied (and which option they chose), the rehearsal grade if
    R or Python was rehearsed, and: "This is a rehearsal — the code runs and emits its artifacts. NOT
    a reproducibility verdict; eyeball against the paper."
