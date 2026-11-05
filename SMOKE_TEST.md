@@ -31,7 +31,7 @@ python3 tools/build_public.py --check     # publish anonymity gate
    - [ ] `/reproai:update`
 6. Run `/reproai:check` on a small replication package (e.g. a copy of one IV paper's
    `replication_files/`).
-   - [ ] It runs `reproai check` (or the bundled `python -m line1_core.cli`) and reports a
+   - [ ] It runs `reproai check` (or the bundled `python -m reproai_prep.cli`) and reports a
          priority-graded advisory (P0–P4) + venue compliance + risk register.
    - [ ] It prints the `knowledge: engine X, rules YYYY.MM.DD` line.
    - [ ] It does NOT execute any of the package's code, and does NOT state a reproducibility verdict.

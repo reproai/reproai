@@ -1,4 +1,4 @@
-"""Bump the plugin version in lockstep across the Claude + Codex plugin manifests, BOTH marketplace.json copies (root + .claude-plugin/ — the latter is the one Claude Code's `/plugin update` actually reads), pyproject.toml, and __init__.py after a knowledge update, so a marketplace `/plugin update` ships the new rules."""
+"""Bump the plugin version in lockstep across the Claude + Codex plugin manifests, BOTH marketplace.json copies (root + .claude-plugin/ — the latter is the one Claude Code's `/plugin update` actually reads), pyproject.toml, __init__.py, and CITATION.cff after a knowledge update, so a marketplace `/plugin update` ships the new rules."""
 from __future__ import annotations
 
 import argparse
@@ -14,7 +14,8 @@ CODEX_PLUGIN_JSON = ROOT / "codex-plugin/.codex-plugin/plugin.json"
 # the root copy moved (users on /plugin update never saw 0.4.8–0.4.10), so both bump together now.
 MARKETPLACES = (ROOT / "marketplace.json", ROOT / ".claude-plugin/marketplace.json")
 PYPROJECT = ROOT / "core/pyproject.toml"
-INIT_PY = ROOT / "core/src/line1_core/__init__.py"
+INIT_PY = ROOT / "core/src/reproai_prep/__init__.py"
+CITATION = ROOT / "CITATION.cff"
 
 
 def _bump_semver(v: str, part: str) -> str:
@@ -37,7 +38,7 @@ def main(argv: list[str] | None = None) -> int:
     new = _bump_semver(old, args.part)
 
     if args.dry_run:
-        print(f"[dry-run] {old} -> {new} in plugin.json, codex plugin.json, both marketplace.json copies, pyproject.toml, __init__.py")
+        print(f"[dry-run] {old} -> {new} in plugin.json, codex plugin.json, both marketplace.json copies, pyproject.toml, __init__.py, CITATION.cff")
         return 0
 
     plugin["version"] = new
@@ -60,6 +61,10 @@ def main(argv: list[str] | None = None) -> int:
     init = INIT_PY.read_text(encoding="utf-8")
     init = re.sub(r'^__version__ = "[^"]+"', f'__version__ = "{new}"', init, count=1, flags=re.MULTILINE)
     INIT_PY.write_text(init, encoding="utf-8")
+
+    cff = CITATION.read_text(encoding="utf-8")
+    cff = re.sub(r'^version: \S+', f"version: {new}", cff, count=1, flags=re.MULTILINE)
+    CITATION.write_text(cff, encoding="utf-8")
 
     print(f"bumped {old} -> {new}. Commit and publish the marketplace repo so users get it via /plugin update.")
     return 0

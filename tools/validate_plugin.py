@@ -12,7 +12,7 @@ import yaml
 
 LINE1 = Path(__file__).resolve().parents[1]
 PLUGIN = LINE1 / "claude-plugin"
-CORE_CLI = LINE1 / "core/src/line1_core/cli.py"
+CORE_CLI = LINE1 / "core/src/reproai_prep/cli.py"
 
 _FRONTMATTER = re.compile(r"^---\n(.*?)\n---", re.S)
 
@@ -56,14 +56,14 @@ def check_frontmatter(errors: list[str]) -> None:
 def check_engine_path_resolves(errors: list[str]) -> None:
     import os
     if not CORE_CLI.exists():
-        _fail("command docs reference the engine at core/src/line1_core/cli.py but it is missing", errors)
+        _fail("command docs reference the engine at core/src/reproai_prep/cli.py but it is missing", errors)
         return
     env = dict(os.environ)
     env["PYTHONPATH"] = str(LINE1 / "core/src")
-    res = subprocess.run([sys.executable, "-m", "line1_core.cli", "--version"],
+    res = subprocess.run([sys.executable, "-m", "reproai_prep.cli", "--version"],
                          capture_output=True, text=True, env=env)
     if res.returncode != 0:
-        _fail(f"engine not invokable via documented `python -m line1_core.cli`:\n{res.stderr}", errors)
+        _fail(f"engine not invokable via documented `python -m reproai_prep.cli`:\n{res.stderr}", errors)
 
 
 def main() -> int:

@@ -25,7 +25,8 @@ execution of the package.
 ## Steps
 
 1. Get the report (run `reproai check <ROOT> --venue <VENUE> --out <ROOT>/.reproai/reports`, or the
-   bundled-core form `PYTHONPATH="${REPROAI_CODEX_ROOT}/core/src" python3 -m line1_core.cli check ...`).
+   bundled-core form `PYTHONPATH="${REPROAI_CODEX_ROOT}/core/src" python3 -m reproai_prep.cli check ...`).
+   For a package headed for IQSS Certify, add `--target certify` to this and every re-check.
 2. `cp -r <ROOT> <ROOT>_fixed` (stop and ask if `<ROOT>_fixed` exists).
 3. Read `advisory_plan.json` — its `lossless_contract` and each item's `priority`, `rewrite.mode`,
    `rewrite.fix_prompt` (PROBLEM / WHERE / WHY DOWNSTREAM / TARGET FORM / LOSSLESS BOUNDARY).

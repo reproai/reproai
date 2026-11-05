@@ -1,6 +1,6 @@
 ---
 name: reproai-check
-description: One-shot static pre-diagnose of a replication package. Scans the working directory, applies the author rule set and a venue profile, and writes 4 JSON reports. Never runs author code. Use when an author wants to know if their replication package is ready to submit, or what to fix before a reproducibility check.
+description: One-shot static pre-diagnose of a replication package. Scans the working directory, applies the author rule set and a venue profile, and writes 4 JSON reports (5 with a certification target). Never runs author code. Use when an author wants to know if their replication package is ready to submit, or what to fix before a reproducibility check.
 ---
 
 # reproai check — pre-diagnose a replication package (Codex)
@@ -14,6 +14,13 @@ never execute the author's code.
 1. Determine the package root (default: current directory) and target venue (ask the author if
    unknown). Shipped venue profiles: `aea`, `econsoc`, `apsr`, `ajps`, `jop`, `jasa`, `worldbank`, plus `generic_dataverse` and `generic_openicpsr` fallbacks.
 
+1b. Ask whether the package is headed for certification by IQSS Certify
+   (certify.iq.harvard.edu). If yes, add `--target certify` to every command below: the engine
+   then also checks what Certify 0.2.0 refuses, fails, marks or notes, re-words the advice that
+   Certify contradicts (doRNG, install lines, outside files), and writes
+   `target_readiness_report.json`. Certify runs R and Python only; a Stata package is reported as
+   blocked for Certify while every journal-side finding still applies.
+
 2. Run the engine. If `reproai` is on PATH:
 
    ```bash
@@ -23,15 +30,19 @@ never execute the author's code.
    Otherwise run from the bundled core:
 
    ```bash
-   PYTHONPATH="${REPROAI_CODEX_ROOT}/core/src" python3 -m line1_core.cli check <ROOT> --venue <VENUE> --out <ROOT>/.reproai/reports
+   PYTHONPATH="${REPROAI_CODEX_ROOT}/core/src" python3 -m reproai_prep.cli check <ROOT> --venue <VENUE> --out <ROOT>/.reproai/reports
    ```
 
-3. Read the 4 reports:
+3. Read the reports:
    - `architecture_report.json` — entry points, dependency graph, table→command map, orphans
    - `advisory_plan.json` — remediation items, each `low` (auto-applicable) / `high` (propose-only),
      and each with a `rewrite.fix_prompt`
    - `venue_compliance_report.json` — per-requirement pass/fail vs the venue
    - `risk_register.json` — what would likely break a downstream reproducibility run
+   - `target_readiness_report.json` (only with `--target`) — `status` (`blocked` /
+     `needs_attention` / `no_static_obstacle`) and each finding's `effect` at Certify (`refuse`,
+     `run_fails`, `mark`, `warning`, `note`). It is a static prediction: say so, and never present
+     `no_static_obstacle` as certified. Certify's own closing decides.
    Also read the `adversarial_review` block (the engine's deterministic cross-check): surface any
    `conflicts` and risk-tier over-reach as-is; do not pick a side or override them.
 

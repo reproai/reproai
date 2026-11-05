@@ -1,0 +1,398 @@
+# Certification target: IQSS Certify (certify.iq.harvard.edu).
+#
+# What a replication dataset must satisfy before Certify's closing accepts it, read from Certify's
+# published author program and instructions. ReproAI Prep shares no code with Certify: every
+# detector here is our own, and Certify's closing stays the only authority on whether a package
+# closes. When Certify changes, re-read its program and bump `basis` and `profile_version`.
+#
+# certify_effect: what Certify does when the finding holds.
+#   refuse    -- `certify targets` / closing refuses the package before any run
+#   run_fails -- a closure run fails, which stops closing
+#   mark      -- the certificate carries an exception mark (unmasked-reseed)
+#   warning   -- closing prints a warning; the grade may drop
+#   note      -- `certify targets` or closing prints a note; a repair to propose
+target: certify
+name: IQSS Certify
+profile_version: "2026.11.05"
+basis:
+  author_program: "0.2.0"
+  rulebook: "0.2.0"
+  instructions: "https://certify.iq.harvard.edu/CERTIFY_PROMPT.md (fetched 2026-11-05)"
+# The files this profile was read from, by their SHA-256 in Certify's published SHA256SUMS.
+# tools/certify_watch.py compares them with the live list; a change means: re-read, re-measure.
+watch:
+  sums_url: "https://certify.iq.harvard.edu/SHA256SUMS"
+  files:
+    CERTIFY_PROMPT.md: "17a7bc7b50070bc64da2c3ed50262e9a8c03e273ee617525fea42fe979abc61f"
+    dist/author_program-0.2.0-py3-none-any.whl: "87be5ad8bb9f79ddf567cfe73d2d1801ad2702c4496d491637f7230ee0bec8d1"
+    dist/rulebook-0.2.0-py3-none-any.whl: "ec0bfdf4b0ca529890cf178b0e2284685febba3035a7caa692c55874b227088d"
+
+rules:
+  - id: CF1-stata-not-runnable
+    category: environment
+    kind: defect
+    priority: P0
+    certify_effect: refuse
+    certify_basis: "author_program tree.preflight: a language that is not runnable stops closing; Certify 0.2.0 runs R and Python only"
+    rule: "Certify 0.2.0 does not run Stata: a replication dataset that holds a .do file outside the library root .certified/lib/ cannot be closed."
+    detection: "Any file ending in .do (case as written) outside .certified/lib/."
+    languages: [stata]
+    why_downstream: "Closing stops before any run with 'stata scripts are present; running stata is not built yet', whether or not the .do file is a target."
+    target_form: "Certification with Certify waits until it runs Stata. Every other finding still applies to a journal's own reproducibility check. If the Stata scripts are not part of the analysis being certified, leave them out of the prepared copy and say so in CERTIFICATION-NOTES.txt."
+    lossless_note: "Not auto-safe: leaving a script out changes what the certificate covers; the author decides."
+    propose_only: true
+    output_changing: false
+
+  - id: CF2-notebook-only
+    category: structural
+    kind: defect
+    priority: P0
+    certify_effect: refuse
+    certify_basis: "author_program tree.preflight 'no script to run'; instructions Step 1"
+    rule: "The analysis must live in .R, .r or .py scripts: a dataset whose code is only in notebooks or R Markdown (.ipynb, .Rmd, .qmd) has no script for Certify to run."
+    detection: "No .R/.r/.py/.do file outside .certified/lib/, and at least one .ipynb/.Rmd/.qmd file."
+    languages: [r, python]
+    why_downstream: "Closing refuses with 'no script to run'; notebooks are never run under certification."
+    target_form: "Make a script from each notebook in the prepared copy (R Markdown: knitr::purl(\"x.Rmd\"); Jupyter: jupyter nbconvert --to script x.ipynb) and keep the notebook beside it as a document."
+    lossless_note: "Conversion keeps every code cell in order; prose cells become comments. Check that the script runs on its own."
+    propose_only: true
+    output_changing: false
+
+  - id: CF3-notebook-not-run
+    category: structural
+    kind: normalization
+    priority: P2
+    certify_effect: note
+    certify_basis: "instructions Step 1: notebooks and documents with code are not run"
+    rule: "Notebooks and R Markdown files are not run under certification; results they produce are not certified unless their code is also in a script."
+    detection: "At least one .ipynb/.Rmd/.qmd file beside the scripts."
+    languages: [r, python]
+    why_downstream: "A table or figure made only inside a notebook is not covered by the certificate."
+    target_form: "If a notebook produces reported results, make a script from it (knitr::purl or jupyter nbconvert --to script) and add that script to the run order."
+    lossless_note: "Not auto-safe: adding a script to the run order changes what is certified."
+    propose_only: true
+    output_changing: false
+
+  - id: CF4-path-from-script-folder
+    category: structural
+    kind: defect
+    priority: P0
+    certify_effect: run_fails
+    certify_basis: "author_program closing: every step starts in the dataset's root folder; instructions Step 2"
+    rule: "Paths must be written from the dataset's root folder: every certified step starts there, whatever folder the script sits in."
+    detection: "An R or Python script in a subfolder reads, sources or writes a literal path that exists relative to the script's own folder but not from the root, and the script does not change directory."
+    languages: [r, python]
+    why_downstream: "The step fails with 'cannot open the connection' or 'No such file or directory', which stops closing."
+    target_form: "Spell the path from the root: code/helpers.R rather than helpers.R in a script under code/, data/x.csv rather than ../data/x.csv."
+    lossless_note: "Auto-safe in principle (the same file is named), but propose it: the author confirms the run starts at the root."
+    propose_only: true
+    output_changing: false
+
+  - id: CF5-climb-above-root
+    category: structural
+    kind: defect
+    priority: P0
+    certify_effect: refuse
+    certify_basis: "rulebook audit.is_outside: a reference that normalizes to .. or starts with ../ leaves the dataset (refusal i)"
+    rule: "No path may climb above the dataset's root, not even one level ('../data/x.csv')."
+    detection: "A quoted path starting with exactly one ../ (or ..\\, or equal to ..) on a code line of an R or Python script. Two or more levels are B4's case."
+    languages: [r, python]
+    why_downstream: "Closing refuses with '(i) undeclared external reference': runs start at the root, so ../ points outside the deposited files."
+    target_form: "Spell the path from the root ('data/x.csv'), or remove the setwd()/os.chdir() that made ../ necessary."
+    lossless_note: "Propose-only: the right root-relative path depends on where the run starts."
+    propose_only: true
+    output_changing: false
+
+  - id: CF6-network-read
+    category: environment
+    kind: defect
+    priority: P0
+    certify_effect: refuse
+    certify_basis: "rulebook audit.is_outside (an address is outside); runs are denied the network"
+    rule: "No file may be read from a web address at run time: the certified runs have no network."
+    detection: "An R or Python code line that reads, sources or downloads a quoted http(s)/ftp address (read.csv, fread, source, download.file, url, pd.read_csv, urlretrieve, urlopen, ...)."
+    languages: [r, python]
+    why_downstream: "Closing refuses with '(i) undeclared external reference' (an address on the network)."
+    target_form: "Download the file beforehand and deposit it in the prepared copy, or declare it so closing fetches it: `certify declare` writes the line to .certified/deps.txt (https only) and the code reads it from .certified/deps/<path>."
+    lossless_note: "Propose-only: the deposited copy must be the file the address served."
+    propose_only: true
+    output_changing: false
+
+  - id: CF7-outside-service
+    category: environment
+    kind: normalization
+    priority: P1
+    certify_effect: note
+    certify_basis: "instructions Step 2c: calls to an outside service are recorded once (certify record) and answered from the recording"
+    rule: "A script that calls an outside web service (an API, a language model) must be recorded once with `certify record` before closing, and must run when its key is absent."
+    detection: "A Python script importing requests, httpx or urllib.request, or an R script loading httr, httr2 or curl. A Python key read as os.environ[\"...\"] (no default) is named too."
+    languages: [r, python]
+    why_downstream: "The runs have no network; an unrecorded request fails the step. A key read without a default raises an error in every later run, where the key is absent."
+    target_form: "Record one live run with `certify record` (Step 2c) after the author approves. Read keys with a default: os.environ.get(\"KEY\", \"\") in Python, Sys.getenv(\"KEY\") in R."
+    lossless_note: "Reading a key with a default changes no result; recording is Certify's own step."
+    propose_only: true
+    output_changing: false
+
+  - id: CF8-tree-paths
+    category: structural
+    kind: defect
+    priority: P0
+    certify_effect: refuse
+    certify_basis: "author_program tree.preflight and rulebook pack.check_paths"
+    rule: "The folder must pack cleanly: no symbolic links, no empty folders, no two names that differ only in letter case or Unicode spelling, no control characters in a name."
+    detection: "A walk of the folder (version control's .git excluded) finds a symbolic link, an empty folder, a case-only or Unicode-form name clash, or a control character in a path."
+    languages: [stata, r, python]
+    why_downstream: "Closing refuses before any run; an empty output folder is a common case, since png() and ggsave() do not create folders."
+    target_form: "Replace a link with the file (or declare its target); put an empty .keep file in an empty folder, or make the script create it (R: dir.create(path, recursive = TRUE); Python: os.makedirs(path, exist_ok=True)); rename clashing files and update the code that names them."
+    lossless_note: "Renames must be applied to every reference; propose-only."
+    propose_only: true
+    output_changing: false
+
+  - id: CF9-installation-folder
+    category: structural
+    kind: normalization
+    priority: P2
+    certify_effect: note
+    certify_basis: "author_program tree.INSTALLATION_FOLDERS"
+    rule: "Installed libraries and unzip leftovers (renv/, .venv/, venv/, env/, node_modules/, __MACOSX/) are not the analysis; leave them out of the prepared copy."
+    detection: "One of those folder names anywhere in the tree."
+    languages: [r, python]
+    why_downstream: "They are deposited as they stand, count toward the size ceiling, and their scripts are never targets; `certify vendor` copies the libraries the run needs into .certified/lib/ instead."
+    target_form: "Leave the folder out of the prepared copy; keep renv.lock or requirements.txt as documentation."
+    lossless_note: "Removing an installation folder changes no computation once the libraries are vendored."
+    propose_only: true
+    output_changing: false
+
+  - id: CF10-startup-file
+    category: environment
+    kind: defect
+    priority: P0
+    certify_effect: refuse
+    certify_basis: "author_program refusals: startup files that stand in for the runtime's hook (refusal viii)"
+    rule: "No runtime startup file may ship in the dataset: .Rprofile, .Renviron, Rprofile.site, Renviron.site, sitecustomize.py, usercustomize.py, profile.do."
+    detection: "A file with one of those names anywhere outside .certified/lib/."
+    languages: [stata, r, python]
+    why_downstream: "Closing refuses: such a file would run at startup in place of, or before, the certified run's hook."
+    target_form: "Leave it out of the prepared copy and move any setting the analysis needs into the script itself. An .Rprofile that activates renv is replaced by `certify vendor`."
+    lossless_note: "Moving a setting into the script keeps the computation; propose-only."
+    propose_only: true
+    output_changing: false
+
+  - id: CF11-reserved-name
+    category: structural
+    kind: defect
+    priority: P0
+    certify_effect: refuse
+    certify_basis: "author_program refusals: a text file naming a capture file's or the salt file's path (refusal iii)"
+    rule: "No deposited text file may contain the strings .certified/step- or certified_salt.bin."
+    detection: "A text file (any extension) containing either string."
+    languages: [stata, r, python]
+    why_downstream: "Closing refuses with '(iii) ... names a capture file's or the salt file's path', even in a README or a notes file."
+    target_form: "Remove or reword the mention in the prepared copy."
+    lossless_note: "Text outside code; changes no computation."
+    propose_only: true
+    output_changing: false
+
+  - id: CF12-runtime-cache-write
+    category: environment
+    kind: defect
+    priority: P0
+    certify_effect: run_fails
+    certify_basis: "author_program steps: a step that leaves a runtime-cache path (.RData, .Rhistory, __pycache__/, ...) fails"
+    rule: "A script must not leave R's workspace file .RData or history file .Rhistory behind."
+    detection: "An R code line calling save.image() with no file, or saving to \".RData\", or savehistory()."
+    languages: [r]
+    why_downstream: "The step fails with 'left a runtime-cache path in the tree', which stops closing."
+    target_form: "Save the objects later steps need under a named file (save(x, y, file = \"output/objects.RData\")) or drop the line."
+    lossless_note: "Propose-only: a later script may load the workspace."
+    propose_only: true
+    output_changing: false
+
+  - id: CF13-non-utf8-text-read
+    category: environment
+    kind: defect
+    priority: P2
+    certify_effect: run_fails
+    certify_basis: "rulebook settings.frozen_settings: LC_ALL=C.UTF-8, PYTHONUTF8=1; instructions 'Things learned the hard way'"
+    rule: "A text data file that is not UTF-8 must be read with its encoding named: the certified runs read text as UTF-8."
+    detection: "A shipped .csv/.tsv/.txt file read by a script is not valid UTF-8, and no fileEncoding=/encoding= appears in the reading script."
+    languages: [r, python]
+    why_downstream: "The read fails or garbles characters (a decode error in Python, mis-read strings in R), so outputs differ or the step fails."
+    target_form: "Name the encoding where the file is read: read.csv(\"x.csv\", fileEncoding = \"latin1\") in R, pd.read_csv(\"x.csv\", encoding=\"latin-1\") in Python."
+    lossless_note: "Naming the file's true encoding reads the same characters the author saw."
+    propose_only: true
+    output_changing: false
+
+  - id: CF14-runtime-install
+    category: environment
+    kind: defect
+    priority: P1
+    certify_effect: note
+    certify_basis: "rulebook advisories: a package installed while the script runs"
+    rule: "No script may install packages while it runs: the runs have no network and install nothing."
+    detection: "An R code line calling install.packages, install_github (and kin), renv::restore/install/activate/hydrate, pak, BiocManager::install, p_install or p_load_gh; a Python code line running pip, conda, mamba or uv install, or ensurepip."
+    languages: [r, python]
+    why_downstream: "The install fails without a network and the step fails; the libraries must be in the dataset's library root instead."
+    target_form: "Take the line out of the prepared copy; `certify vendor` copies the installed libraries into .certified/lib/ (Step 2b). Record versions in the README if you like."
+    lossless_note: "Removing an install line changes no computation once the library is vendored."
+    propose_only: true
+    output_changing: false
+
+  - id: CF15-interactive-call
+    category: code-style
+    kind: defect
+    priority: P2
+    certify_effect: note
+    certify_basis: "rulebook advisories: a call that needs a person at the keyboard or a desktop program"
+    rule: "No script may wait for a person or a desktop program: the runs are plain Rscript and python3 with input closed."
+    detection: "R: View(), file.choose(), choose.files(), choose.dir(), readline(), menu(), askYesNo(), select.list(), winDialog(), rstudioapi. Python: input(), getpass(), breakpoint(), pdb.set_trace(), webbrowser.open()."
+    languages: [r, python]
+    why_downstream: "The call fails or blocks with no input, and the step fails or times out."
+    target_form: "Take the call out of the prepared copy, or guard it (R: if (interactive()) ...; Python: if sys.stdin.isatty(): ...)."
+    lossless_note: "Interactive calls produce no outputs; removing them changes no result."
+    propose_only: true
+    output_changing: false
+
+  - id: CF16-hook-dropping-launch
+    category: environment
+    kind: defect
+    priority: P0
+    certify_effect: refuse
+    certify_basis: "author_program refusals: a launch flag or environment that drops the startup hook (refusal viii)"
+    rule: "No code may launch R or Python in a way that skips the startup files (R --vanilla or --no-init-file; python -I, -S or -E; env -i; a subprocess with an empty environment)."
+    detection: "Any of those spellings anywhere in an R, Python or Stata file. Certify reads the whole file here, so a comment counts too."
+    languages: [stata, r, python]
+    why_downstream: "Closing refuses: the launched process would escape the certified run's hook and record."
+    target_form: "Call the script directly (source(), import, or Rscript without --vanilla), and pass the environment through."
+    lossless_note: "Propose-only: a cleared environment may hide a dependency."
+    propose_only: true
+    output_changing: false
+
+  - id: CF17-remote-launch
+    category: environment
+    kind: defect
+    priority: P0
+    certify_effect: refuse
+    certify_basis: "author_program refusals: work sent to other machines through a cluster launcher (refusal viii)"
+    rule: "All work must run on one machine: no cluster schedulers (sbatch, srun, salloc, qsub, bsub), MPI launchers (mpirun, mpiexec) or ssh to another host."
+    detection: "Any of those commands on a code line of an R, Python or Stata file."
+    languages: [stata, r, python]
+    why_downstream: "Closing refuses: the certified run observes one machine, and its hook files are not on the others."
+    target_form: "Run the computation locally (sequentially or with local workers); a computation too long to run three times can be declared as an item computation (certify declare --items, Step 2c)."
+    lossless_note: "Propose-only."
+    propose_only: true
+    output_changing: false
+
+  - id: CF18-certification-setting-named
+    category: environment
+    kind: normalization
+    priority: P1
+    certify_effect: mark
+    certify_basis: "rulebook audit SETTING_READ: code naming a setting the certified run rests on marks the certificate (unmasked-reseed)"
+    rule: "Code should not name the settings the certified run rests on: PYTHONPATH, PYTHONNOUSERSITE, R_PROFILE_USER, R_ENVIRON_USER, S_ADO, CERTIFIED_SEED, CERTIFIED_STEP, CERTIFIED_DEPTH, CERTIFIED_LOADED."
+    detection: "One of those names on a code line of an R or Python script. CERTIFIED_ITEMS and CERTIFIED_ITEMS_OUT, the item-computation interface, do not count."
+    languages: [r, python]
+    why_downstream: "The certificate carries an unmasked-reseed exception mark: once code reaches those settings, the program cannot vouch that every seed was re-mapped."
+    target_form: "Remove the reference; set search paths inside the script (sys.path.insert, .libPaths) only if the analysis needs it, and prefer paths from the root."
+    lossless_note: "Propose-only."
+    propose_only: true
+    output_changing: false
+
+  - id: CF19-unremappable-seed
+    category: environment
+    kind: normalization
+    priority: P1
+    certify_effect: mark
+    certify_basis: "rulebook audit RESEED_PATTERNS (forms the capture code cannot re-map)"
+    rule: "Seed random numbers in a way Certify can re-map: set.seed, clusterSetRNGStream and future.seed in R; random.seed, numpy's seed and default_rng, torch.manual_seed in Python. Other forms mark the certificate."
+    detection: "R: registerDoRNG, %dorng%, RNGseq, setSeed, set.generator, dqset.seed, RNGkind(\"user\"), assignment to .Random.seed (other than nextRNGStream), trainControl(seeds = ). Python: random.setstate, random.SystemRandom, os.urandom, torch.Generator, torch.set_rng_state, numpy set_state or bit_generator.state =, jax/tensorflow/cupy generators, LightGBM or CatBoost seed arguments."
+    languages: [r, python]
+    why_downstream: "The certificate carries an unmasked-reseed exception mark, which readers see; the draws are not tied to the archive's seed."
+    target_form: "R parallel work: RNGkind(\"L'Ecuyer-CMRG\") with set.seed(N), clusterSetRNGStream(cl, N), or future.seed = N instead of doRNG. Python: numpy.random.default_rng(N) or random.seed(N) instead of saved states and OS entropy."
+    lossless_note: "Not auto-safe: a different seeding form changes the realized random draws; re-run and update affected outputs."
+    propose_only: true
+    output_changing: true
+
+  - id: CF20-socket-workers
+    category: environment
+    kind: normalization
+    priority: P2
+    certify_effect: note
+    certify_basis: "rulebook isolation.network_advice: where the runs reach no address, local worker sockets cannot open"
+    rule: "Prefer forked or sequential workers to socket workers: on some machines the certified runs cannot open even local sockets."
+    detection: "An R code line calling makeCluster(), makePSOCKcluster() or a future multisession plan."
+    languages: [r]
+    why_downstream: "On Linux with an unprivileged network namespace (Ubuntu 24.04 and later) the workers cannot start and the step fails."
+    target_form: "Use forked workers (parallel::mclapply, makeForkCluster, future's multicore) or run sequentially; seed them with RNGkind(\"L'Ecuyer-CMRG\") and set.seed."
+    lossless_note: "Not auto-safe: worker type can change random streams; re-run affected outputs."
+    propose_only: true
+    output_changing: true
+
+  - id: CF21-forked-workers-default-rng
+    category: environment
+    kind: defect
+    priority: P1
+    certify_effect: warning
+    certify_basis: "author_program advice: forked R workers under the default generator are seeded at random"
+    rule: "R code that forks workers (mclapply and kin) must use the L'Ecuyer-CMRG generator, or the two practice runs differ."
+    detection: "An R script calling mclapply, mcmapply, mcMap, pvec, mcparallel or makeForkCluster with no L'Ecuyer-CMRG anywhere in the file."
+    languages: [r]
+    why_downstream: "Each child is seeded at random, the two closure runs disagree, and the grade drops (closing refuses a T2 grade unless disclosed)."
+    target_form: "Call RNGkind(\"L'Ecuyer-CMRG\") before set.seed(N) at the top of the script."
+    lossless_note: "Not auto-safe: changes the realized random draws; re-run affected outputs."
+    propose_only: true
+    output_changing: true
+
+  - id: CF22-output-folder-missing
+    category: structural
+    kind: defect
+    priority: P0
+    certify_effect: run_fails
+    certify_basis: "author_program tree.preflight (empty folders refused) and closing (a write to a missing folder fails the step)"
+    rule: "A script must create the folders it writes into: empty folders cannot be deposited, and png(), ggsave() and to_csv() do not create folders."
+    detection: "An R or Python write call names a literal path whose folder does not exist in the package, and no script creates folders (dir.create, os.makedirs, os.mkdir, Path.mkdir)."
+    languages: [r, python]
+    why_downstream: "The write fails with 'cannot open file' or 'No such file or directory', which stops closing."
+    target_form: "Create the folder before writing: R dir.create(\"output/tables\", recursive = TRUE, showWarnings = FALSE); Python os.makedirs(\"output/tables\", exist_ok=True)."
+    lossless_note: "Creating a folder changes no result."
+    propose_only: true
+    output_changing: false
+
+  - id: CF23-entry-count
+    category: structural
+    kind: defect
+    priority: P0
+    certify_effect: refuse
+    certify_basis: "rulebook constants C_FILES = 100000 and packed.PROPOSAL_MINIMUM_FILES = 10000"
+    rule: "A dataset may hold at most 100,000 entries; a folder of 10,000 files or more should be packed as one entry."
+    detection: "More than 100,000 files in the tree; the evidence names the folders of 10,000 files or more to pack."
+    languages: [stata, r, python]
+    why_downstream: "Closing refuses above the entry ceiling; a folder named as packed counts once."
+    target_form: "Pass the large folders to closing as packed folders (certify close --packed <folder>/); a run must not write under a packed folder."
+    lossless_note: "Packing changes no file."
+    propose_only: true
+    output_changing: false
+
+# Generic-rule advice that is wrong or incomplete for Certify. `suppress` drops the finding under
+# this target (another rule above covers it); the text fields replace the generic ones; `certify_effect`
+# and `priority` say what Certify does with the finding when it is more than the generic rule says.
+overrides:
+  B4-no-abs-paths:
+    certify_effect: refuse
+    priority: P0
+    target_form: "Copy the file into the prepared copy and spell its path from the root, or, for a file with a public https address, declare it with `certify declare` (written to .certified/deps.txt) and read it from .certified/deps/<path>. Certify refuses any absolute path, home path (~), drive letter or climb above the root."
+  C1-pin-deps:
+    target_form: "Under certification nothing installs at run time: `certify vendor` copies the exact installed library versions into .certified/lib/. Record the versions in the README (sessionInfo(), pip freeze) as documentation; do not add install lines."
+  C7-nonreproducible-parallel-rng:
+    why_downstream: "Parallel draws that change from run to run make the two practice runs disagree. Under Certify, doRNG's registerDoRNG and %dorng% are seeding forms its capture code cannot re-map, so they put an unmasked-reseed mark on the certificate."
+    target_form: "Use streams Certify re-maps: RNGkind(\"L'Ecuyer-CMRG\") and set.seed(N) before forked workers, clusterSetRNGStream(cl, N) for a cluster, or future.seed = N. Then regenerate the affected tables and figures."
+  C8-unseeded-stochastic:
+    target_form: "Set a seed Certify can re-map before the first draw: R set.seed(N) (parallel: RNGkind(\"L'Ecuyer-CMRG\") + set.seed(N), clusterSetRNGStream, or future.seed = N; not doRNG); Python random.seed(N) or numpy.random.default_rng(N). Certify seats a seed for every step, so the run is reproducible either way; the author's seed keeps the certified numbers equal to the paper's."
+  C10-no-runtime-code-fetch:
+    suppress: true
+  D10-package-size-cap:
+    certify_effect: refuse
+    target_form: "Certify's ceiling is 1,000,000,000 bytes including the libraries `certify vendor` will copy into .certified/lib/. Declare a large data file instead of depositing it (`certify declare`, fetched from a public address or held), or run from a container image whose libraries do not count (certify close --image)."
+  A14-missing-input:
+    certify_effect: run_fails
+    target_form: "Ship the file in the prepared copy, or declare it: a public file with `certify declare` (read from .certified/deps/<path>); confidential data by kind, as Certify's Step 2a describes (restricted: `certify restrict`; licensed or held in a facility: `certify declare --held`)."

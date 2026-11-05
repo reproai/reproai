@@ -37,13 +37,17 @@ auto-fix errors silently. **Every fix is the author's decision.**
 1. Pick the target copy (`<root>_fixed`, else `cp -r <ROOT> <ROOT>_debug`).
 2. Determine run order: master script → README order → else ask the author. Do not guess a
    multi-script order.
-3. Trial-run one script at a time, capturing output to a log:
-   - Stata: `stata -b do <script>.do` then read `<script>.log` for `r(###)`.
-   - R: `Rscript <script>.R 2>&1 | tee <script>.log`.
-   - Python: `python3 <script>.py 2>&1 | tee <script>.log`.
-   Stop at the first script that errors.
+3. Trial-run. For R and Python use the engine's rehearsal, which copies the package again and runs
+   it the way a certification service will (from the root, network denied, private empty home,
+   UTC and C.UTF-8, figures to files only, global random generators seeded), stopping at the first
+   failure:
+   `reproai rehearse <COPY> --script <first> --script <second> ... --out <COPY>/.reproai/rehearsal.json`.
+   `--runs 2` (default) also compares two runs: `identical` / `numerically_close` / `different`
+   predict T0 / T1 / T2 at IQSS Certify. Read each failed step's `tail` and `hints`, and report
+   `network_denied_by` as it stands (`proxy` = proxy settings only).
+   - Stata is not rehearsed: `stata -b do <script>.do`, then read `<script>.log` for `r(###)`.
 4. **On a runtime error — STOP and consult the author. Do NOT auto-fix.**
-   a. Read the log; locate the failing command and error code.
+   a. Read the failing step's `tail` and `hints` (or the Stata log); locate the failing command.
    b. State the **root cause** in 1–2 sentences.
    c. Compose **2–4 fix options**, each with its trade-off.
    d. **Ask the author to choose. Interaction adapter (graceful degradation):**

@@ -20,7 +20,7 @@ replication packages. It is a thin host adapter over the SAME deterministic Pyth
 ## Engine (shared, not duplicated)
 
 The engine lives at the repo's top-level `core/` and is invoked as `reproai check` / `reproai fix`,
-or via the bundled core: `PYTHONPATH="${REPROAI_CODEX_ROOT}/core/src" python3 -m line1_core.cli ...`.
+or via the bundled core: `PYTHONPATH="${REPROAI_CODEX_ROOT}/core/src" python3 -m reproai_prep.cli ...`.
 `${REPROAI_CODEX_ROOT}` is set by `install.sh` to this repo root. Nothing in the engine is
 Codex-specific; the adapter only changes how commands are discovered and how the author is asked
 a question.

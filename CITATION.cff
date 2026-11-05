@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use ReproAI Prep, please cite it as below."
+type: software
+title: "ReproAI Prep: Preparing Replication Packages for Reproducibility Checks and Certification"
+authors:
+  - family-names: Yang
+    given-names: "Leo Yang"
+  - family-names: Xu
+    given-names: Yiqing
+version: 0.8.0
+license: MIT
+repository-code: "https://github.com/reproai/reproai"
+url: "https://reproai.org"
+keywords:
+  - replication
+  - reproducibility
+  - replication package
+  - certification

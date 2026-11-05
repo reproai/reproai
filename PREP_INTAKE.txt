@@ -1,0 +1,38 @@
+Prepare my replication package with ReproAI Prep, using the form below.
+
+Answer after each ">". Leave anything blank and your assistant
+will ask you for it. Never write a password or token here.
+
+Your replication package's folder on this computer:
+>
+
+The journal it is for (aea, econsoc, apsr, ajps, jop, jasa,
+worldbank, or the repository: generic_dataverse,
+generic_openicpsr), if you know it:
+>
+
+Will it be certified by IQSS Certify (certify.iq.harvard.edu)?
+(yes / no / not sure)
+>
+
+Where to put the working folder, if not
+~/replication-prep/<your folder's name>-<today>:
+>
+
+Tick [x] to change a default:
+
+  [ ] Do not change any of my files, even in a copy.
+      Only tell me what to fix.
+
+  [ ] Do not run my code. (Otherwise, after the static check,
+      the package is run twice on a copy, with your approval.)
+
+  [ ] My data are confidential (restricted, licensed, or in a
+      secure facility). Ask me which before you start.
+
+For your AI assistant: fetch and follow, exactly, the instructions at
+https://raw.githubusercontent.com/reproai/reproai/main/PREP_PROMPT.md
+
+If an answer above is blank, ask me for it, one short question at a
+time, before you start. Never modify my original files. Never write
+my token into a file. Ask me before every change.

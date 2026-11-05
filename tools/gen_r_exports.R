@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-# Generates core/src/line1_core/rules/r_exports_db.json — the bundled R export snapshot behind
+# Generates core/src/reproai_prep/rules/r_exports_db.json — the bundled R export snapshot behind
 # A17-undefined-r-callable (issue #36).
 #
 # The detector fires ONLY when every library()/require() target in a script is a package in this
@@ -57,7 +57,7 @@ db <- list(
   cran = grab(cran_pkgs)
 )
 
-out_path <- file.path("core", "src", "line1_core", "rules", "r_exports_db.json")
+out_path <- file.path("core", "src", "reproai_prep", "rules", "r_exports_db.json")
 if (!file.exists(dirname(out_path))) stop("run from the repo root: Rscript tools/gen_r_exports.R")
 writeLines(jsonlite::toJSON(db, auto_unbox = TRUE, pretty = FALSE), out_path)
 

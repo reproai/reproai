@@ -1,25 +1,22 @@
 # ReproAI Prep
 
+By Leo Yang Yang and Yiqing Xu.
+
 **An author-facing pre-diagnose tool for replication packages.** Run it on your own
 replication package *before* you submit, so the downstream reproducibility check passes on
 the first try instead of bouncing back through round after round of fixes.
 
-ReproAI Prep is a [Claude Code](https://docs.claude.com/en/docs/claude-code) / OpenAI Codex plugin.
+ReproAI is a [Claude Code](https://docs.claude.com/en/docs/claude-code) / OpenAI Codex plugin.
 A deterministic engine decides what is wrong; the host LLM explains it, drafts the fixes, and —
 only when you ask — runs the package as a smoke test. Website: [reproai.org](https://reproai.org).
-
-> **ReproAI Prep is one of two components.** ReproAI Prep *prepares* a replication package
-> (this repository); **ReproAI Cert** then *certifies* the prepared package — closing the
-> computation, running one traced certification run, and issuing a signed reproducibility
-> certificate. The two are hot-swappable, independently versioned components under the ReproAI
-> brand: you can use Prep without Cert, or Cert on any package that meets its input contract.
 
 ## What it does
 
 You point it at a messy replication package (Stata / R / Python). It:
 
 1. **Scans, statically** — file inventory, dependency graph, table↔command mapping, orphan
-   files, an author rule set, and a target-venue profile (AEA, Econometric Society, JASA, World Bank, APSR, AJPS, JOP, …).
+   files, an author rule set, a target-venue profile (AEA, Econometric Society, JASA, World Bank, APSR, AJPS, JOP, …),
+   and, if you are headed for certification, a certification-target profile (IQSS Certify).
 2. **Advises, by priority** — every finding is graded **P0–P4** by its downstream
    reproducibility cost (P0 = blocks the run; P4 = polish) and tagged **defect** ("this would
    cost the pipeline") vs **normalization** ("a more standard way to write it"). Each finding
@@ -28,11 +25,15 @@ You point it at a messy replication package (Stata / R / Python). It:
 3. **Fixes, on a copy** — the host LLM rewrites a *copy* of your package under a
    semantics-preserving contract (your original is never touched), re-checks, and iterates
    until the findings clear. You review the diff.
-4. **Smoke-tests, on request** — optionally runs the fixed copy to confirm it executes and
-   that the table/figure outputs actually appear. On a runtime error it does **not** auto-fix:
-   it explains the root cause, offers options, and asks you to decide.
+4. **Rehearses, on request** — runs a copy of the fixed package twice, the way a certification
+   service will (from the root, no network, a private home, fixed locale and time zone, seeded
+   generators), and compares the outputs. On a runtime error it does **not** auto-fix: it
+   explains the root cause, offers options, and asks you to decide.
+5. **Hands off** — a prepared copy with every approved change recorded in
+   `CERTIFICATION-NOTES.txt`, and a handoff that names the run order, the libraries, what is
+   still open, and the next steps for your destination.
 
-> **Trust boundary.** ReproAI never compares your coefficients to the paper and never issues a
+> **Trust boundary.** ReproAI Prep never compares your coefficients to the paper and never issues a
 > "reproducible / certified" verdict — that is a separate downstream step. The static commands
 > (`check` / `comply` / `fix`) do not execute your code; only the opt-in `debug` command runs
 > it, and only as a smoke test (does it run, did the outputs appear).
@@ -41,17 +42,18 @@ You point it at a messy replication package (Stata / R / Python). It:
 
 | Command | What it does |
 |---|---|
-| `/reproai:check` | One-shot static pre-diagnose → 4 JSON reports (architecture, advisory, venue compliance, risk register). |
+| `/reproai:prepare` | The whole preparation in one pass: check, approved repairs on a copy, rehearsal (with permission), handoff. |
+| `/reproai:check` | One-shot static pre-diagnose → 4 JSON reports (architecture, advisory, venue compliance, risk register), plus a certification-readiness report with `--target certify`. |
 | `/reproai:comply` | Just the target-journal replication-package checklist (AEA, …). |
 | `/reproai:fix` | Apply the advisory fixes to a **copy** under a lossless contract; re-check; iterate. Chain: **A12 → N2 → D1** (anchor table comments → unroll loops → export per-table outputs). |
-| `/reproai:debug` | Smoke-test the (fixed) copy: run it, confirm injected table/figure outputs appear; ask the author on a runtime error. |
+| `/reproai:debug` | Rehearse the (fixed) copy with `reproai rehearse`: run it twice under certification-like settings, confirm the table/figure outputs appear and agree; ask the author on a runtime error. |
 | `/reproai:map` | **Advisory** overlay of the manuscript's figures/tables on the package's outputs (exhibits with no output, outputs with no exhibit, panel mismatches). LaTeX; never runs code; not part of `check`. |
 | `/reproai:update` | Show the installed knowledge version and how to update the rule set. |
 | `/reproai:contribute` | File a pre-filled GitHub issue for a missed rule, a false flag, or a new venue + its rules. You click Submit; reproai never posts. |
 
 ## What it checks (rule set)
 
-45 author-preventable rules across four families, each with a fix prompt and a per-rule
+55 author-preventable rules across four families, each with a fix prompt and a per-rule
 lossless boundary:
 
 - **Structural** — explicit data loads, stable includes, no mid-script `cd`, intermediate-data
@@ -59,12 +61,39 @@ lossless boundary:
   anchor comments, per-table/figure output export, per-file documentation.
 - **Code-style** — visible data-load failures, balanced table-output calls, no embedded
   foreign code, no cross-script `clear all`.
-- **Environment** — vendored / `ssc install`-ed user commands, declared Stata/package
-  versions, modern merge syntax, no removed R packages.
+- **Environment** — user-written commands vendored inside the package (no runtime
+  `ssc install` / `install.packages`, no adopath outside the package), declared
+  Stata/package versions, modern merge syntax, no removed R packages.
 - **Venue compliance** — README/forms/structure against the target journal's standard.
 
 The rules distill recurring patterns from a large body of real replication work; the published
 rule set is generic guidance and names no specific paper.
+
+## With any AI assistant
+
+Fill in [`PREP_INTAKE.txt`](PREP_INTAKE.txt) and paste it into your assistant (Claude, Codex, or
+another that can run commands). It points the assistant at [`PREP_PROMPT.md`](PREP_PROMPT.md),
+which takes it through the same steps as `/reproai:prepare`: the static check, approved repairs
+on a copy, a rehearsal if you allow it, and the handoff. The engine's commands are `reproai
+check`, `fix`, `rehearse`, `note` and `handoff`.
+
+## Preparing for IQSS Certify
+
+[Certify](https://certify.iq.harvard.edu) certifies a replication dataset at publication. Its
+closing refuses packages that break its entry contract, and some breaks only show after a long
+run. `reproai check <ROOT> --target certify` checks that contract statically first: 23 rules
+read from Certify 0.2.0's published program (Stata scripts, notebooks-only code, paths written
+from a script's folder or climbing above the root, network reads, outside services, startup
+files, run-time installs, interactive calls, cluster launchers, seeding forms Certify cannot
+re-map, socket and forked workers, missing output folders, file-tree problems, entry counts).
+It also re-words the generic advice Certify contradicts (doRNG, install lines, outside files)
+and writes `target_readiness_report.json`: `blocked`, `needs_attention` or
+`no_static_obstacle`, each finding with the effect it has at Certify (refuse, run fails, mark,
+warning, note).
+
+ReproAI Prep is independent of Certify and shares no code with it. It never runs Certify's own
+steps (`vendor`, `restrict`, `declare`, `record`, `close`); it tells you when you will need them.
+Certify's closing is the only authority on whether a package closes.
 
 ## Install
 
@@ -72,7 +101,7 @@ ReproAI has two parts: the **plugin** (the slash commands) and a small **Python 
 (`reproai` CLI) that the commands call and that holds the rules and venue profiles. Install both.
 
 **Install or update with your AI assistant:** an AI assistant can install *or update* ReproAI by
-fetching `https://raw.githubusercontent.com/reproai/reproai/master/INSTALL_FOR_AI.md` and following
+fetching `https://raw.githubusercontent.com/reproai/reproai/main/INSTALL_FOR_AI.md` and following
 it. The manual steps follow below.
 
 **Claude Code**
@@ -124,13 +153,16 @@ python3 -m pip install -U -e reproai/core                                       
 ```
 claude-plugin/        the Claude Code plugin (commands/, agents/, .claude-plugin/plugin.json)
 codex-plugin/         the OpenAI Codex adapter (.agents/skills/, install.sh) over the same engine
-core/                 the deterministic Prep engine (line1_core) + rules + venue profiles + schemas
+core/                 the deterministic engine (reproai_prep) + rules + venue profiles + schemas
 tools/                maintainer tooling (build the public bundle, promote rules, bump version)
 site/                 the reproai.org website
 ```
 
-The certification component lives in a separate repository (**ReproAI Cert**); this repository
-is Prep only.
+## Citing
+
+Leo Yang Yang and Yiqing Xu. 2026. "ReproAI Prep: Preparing Replication Packages for
+Reproducibility Checks and Certification." Software, https://github.com/reproai/reproai.
+Machine-readable metadata is in [CITATION.cff](CITATION.cff).
 
 ## License
 

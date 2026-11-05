@@ -11,7 +11,7 @@ maintainer can absorb into the rule set or a venue profile. **It never posts** â
 "new issue" URL and the user clicks **Submit**.
 
 Invoke the engine as `reproai contribute ...` if `reproai` is on PATH, otherwise the bundled-core form:
-`PYTHONPATH="${REPROAI_CODEX_ROOT}/core/src" python3 -m line1_core.cli contribute ...`.
+`PYTHONPATH="${REPROAI_CODEX_ROOT}/core/src" python3 -m reproai_prep.cli contribute ...`.
 
 ## Privacy (non-negotiable)
 

@@ -1,13 +1,25 @@
-# tools — Line 1 self-upgrade pipeline
+# tools — ReproAI Prep maintainer tools
 
-The half-automatic knowledge loop that keeps Line 1's rule set current as the downstream Line 2
-reproducibility pipeline learns. **Maintainer tools, not part of the shipped plugin runtime.**
+The half-automatic knowledge loop that keeps the rule set and the certification targets current.
+**Maintainer tools, not part of the shipped plugin runtime.** Knowledge comes from three places:
+
+1. **The reproducibility pipeline's lessons** (the downstream "Line 2" runner, janitor and matcher):
+   `distill_rules.py` → human review → `promote_rule.py`.
+2. **Certification services themselves.** `certify_watch.py` reports when IQSS Certify publishes a
+   new program or revised instructions; then re-read Certify, update `targets/certify.yaml`, and
+   re-run `certify_alignment.py`, which measures the target against Certify's own `certify targets`
+   on a corpus and lists every refusal or note Prep missed.
+3. **Real packages prepared for certification.** Repairs real packages needed before Certify
+   accepted them (paths from a script's folder, climbs above the root, missing output folders,
+   run-time installs) became `CF` rules; new ones go through the same review.
 
 | Tool | Role |
 |---|---|
 | `distill_rules.py` | Scan Line 2 lessons (runner/janitor/matcher) → surface author-preventable ones not yet in Line 1 → write candidates to `rules-seedbank/candidates.json`. Over-inclusive on purpose. |
 | `promote_rule.py` | Validate a human-reviewed final rule spec and append it to `author_rules.yaml`, bumping `rules_version` and updating `CHANGELOG.md`. Rejects malformed / duplicate / untraceable rules. |
-| `bump_version.py` | After a knowledge update, bump the plugin version in lockstep across `plugin.json`, `marketplace.json`, `pyproject.toml`, and `__init__.py` so a marketplace `/plugin update` ships the new rules. |
+| `bump_version.py` | After a knowledge update, bump the plugin version in lockstep across `plugin.json`, `marketplace.json`, `pyproject.toml`, `__init__.py` and `CITATION.cff` so a marketplace `/plugin update` ships the new rules. |
+| `certify_alignment.py` | Run Prep's `--target certify` and Certify's read-only `certify targets` on the same packages; report Certify refusals or notes Prep missed, and Prep predictions Certify contradicted. Certify is used as an instrument in its own environment, never imported. |
+| `certify_watch.py` | Compare the SHA-256 of the Certify files the target profile was read from (`watch` in `targets/certify.yaml`) with Certify's published `SHA256SUMS`; exit 1 when anything changed. |
 | `build_public.py` | **Publish-time IP/anonymity gate.** Produce the anonymized public bundle (`dist/`) from the internal source: strips per-paper provenance (`source_lessons`), swaps the scrubbed rules into the engine, removes internal-only files (`CHANGELOG.md`, `VALIDATION.md`), and **refuses to build if any paper name leaks**. |
 
 ## Internal vs public boundary (IP red line)
@@ -30,8 +42,10 @@ to the marketplace git repo.
 
 ```bash
 python3 tools/build_public.py --check      # CI gate: verify no paper names would leak
-python3 tools/build_public.py              # build dist/ (anonymized, publishable)
-# push dist/ to the marketplace git repo; tag the plugin version
+python3 tools/build_public.py              # build dist/ (the anonymized plugin bundle)
+python3 tools/build_public.py --mirror DIR # write the public repo's tree (whole-tree copy, scrubbed)
+# replace the public repo's tree with DIR, commit, push main; then:
+python3 tools/build_public.py --audit-published   # clone what is public and re-run the guards
 ```
 
 ## End-to-end

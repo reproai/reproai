@@ -14,7 +14,7 @@ eyeball test against the paper.
 
 **What this command does NOT do** (still true, and important):
 - It does **not** compare coefficients to the paper.
-- It does **not** issue any "reproducible / verified / certified" verdict — that is a separate step (ReproAI Cert).
+- It does **not** issue any "reproducible / verified / certified" verdict — that is Line 2.
 - It does **not** auto-fix errors in a silent loop. **Every fix is the author's decision.**
 - It does **not** change a venue check's status. If you surface venue results and the author says
   they completed a `needs_author_action` item, record it as a NOTE only; the deterministic engine
@@ -47,15 +47,29 @@ eyeball test against the paper.
    else ask the author for the order (this is exactly the `A11-explicit-run-order` finding). Do not
    guess an order for a multi-script package.
 
-3. **Trial-run, one script at a time**, capturing stdout/stderr to a log:
-   - Stata: `stata -b do <script>.do` (or `stata-mp`/`StataSE` as available), then read `<script>.log`
-     for `r(###)` errors.
-   - R: `Rscript <script>.R 2>&1 | tee <script>.log`.
-   - Python: `python3 <script>.py 2>&1 | tee <script>.log`.
-   Stop at the first script that errors.
+3. **Trial-run.** For R and Python, use the engine's rehearsal. It copies the package again (the
+   folder you pass is never run), runs the scripts in order from the copy's root the way a
+   certification service will (network denied, a private empty home folder, UTC and the C.UTF-8
+   locale, figures to files only, each step's global random generator seeded), and stops at the
+   first failure:
+
+   ```bash
+   reproai rehearse <COPY> --script <first> --script <second> ... --out <COPY>/.reproai/rehearsal.json
+   ```
+
+   Pass the approved order with `--script`, one per script; without it the engine runs the entry
+   scripts (those nothing else calls) in path order. `--runs 2` (the default) runs everything twice
+   and compares the outputs: `identical`, `numerically_close` or `different` predicts how two
+   practice runs at IQSS Certify will agree (T0, T1, T2); use `--runs 1` for a quick smoke run. Each
+   failed step carries the last lines of its output and `hints` (path, library, network,
+   session_state, permission). Report `network_denied_by` as it stands: `proxy` means a program
+   that ignores proxy settings could still reach the network on this machine.
+   - Stata is not rehearsed (`not_rehearsed` lists the scripts): run `stata -b do <script>.do` (or
+     `stata-mp`/`StataSE`), read `<script>.log` for `r(###)` errors, and stop at the first one.
 
 4. **On a runtime error — STOP and consult the author. Do NOT auto-fix.**
-   a. Read the log; locate the failing command and the error code/message.
+   a. Read the failing step's `tail` and `hints` (or the Stata log); locate the failing command and
+      the error message.
    b. Determine the **root cause** in one or two sentences (missing package, undefined variable,
       missing intermediate file, path issue, version-specific syntax, etc.).
    c. Compose **2–4 concrete fix options**, each with its trade-off / risk.
@@ -66,7 +80,11 @@ eyeball test against the paper.
         choice automatically)
    e. **Wait for the author's choice.** Apply ONLY the chosen option, to the copy. If the author
       picks "Other", follow their instruction.
-   f. Re-run from the failing script. Repeat from step 4 if it errors again.
+   f. Re-run the rehearsal. Repeat from step 4 if it errors again.
+   g. If the grade is `different`, the outputs changed between two runs: name the files and, for each,
+      whether it `looks_like_clock`. Propose the fix for the cause (a time stamp written into an
+      output, an unseeded draw from OS entropy or a library's own generator, forked workers without
+      `RNGkind("L'Ecuyer-CMRG")`) through `AskUserQuestion` like any other repair.
 
 5. **When the package runs clean, run the runtime HARD GATE (this is the completion authority):**
 
@@ -87,7 +105,7 @@ eyeball test against the paper.
    - any fixes applied (and which option the author chose for each),
    - an explicit note: "This is a smoke test — the code runs and emits its artifacts. It is NOT a
      reproducibility verdict; eyeball the tables/figures against the paper, or send the package to
-     ReproAI Cert for numerical certification."
+     Line 2 for numerical certification."
 
 ## Hard rules
 

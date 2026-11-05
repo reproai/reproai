@@ -14,7 +14,7 @@ LESSON_DIRS = [
     REPO / ".claude/skills/janitor-agent/references/lessons.md",
     REPO / ".claude/skills/matcher-agent/references/lessons.md",
 ]
-RULES_FILE = Path(__file__).resolve().parents[1] / "core/src/line1_core/rules/author_rules.yaml"
+RULES_FILE = Path(__file__).resolve().parents[1] / "core/src/reproai_prep/rules/author_rules.yaml"
 SEEDBANK = Path(__file__).resolve().parents[1] / "rules-seedbank"
 
 # Signals that a lesson is PIPELINE-INTERNAL (our tooling) — author cannot prevent by rewriting.

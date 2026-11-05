@@ -25,7 +25,7 @@ does not mean the package reproduces.
    If `reproai` is not on PATH, run from the bundled core:
 
    ```bash
-   PYTHONPATH="${CLAUDE_PLUGIN_ROOT}/core/src" python3 -m line1_core.cli map <ROOT> --manuscript <PAPER.tex> --out <ROOT>/.reproai/output_map.json
+   PYTHONPATH="${CLAUDE_PLUGIN_ROOT}/core/src" python3 -m reproai_prep.cli map <ROOT> --manuscript <PAPER.tex> --out <ROOT>/.reproai/output_map.json
    ```
 
 3. Read `output_map.json`. If `status` is not `ok` (`manuscript_not_found`, `unsupported_format`),

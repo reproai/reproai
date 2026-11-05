@@ -36,7 +36,7 @@ const VAL = (t) => ({ t, c: "bib-val" });
 const PUN = (t) => ({ t, c: "bib-pun" });
 
 export const content = {
-  brand: { mark: "R", name: "ReproAI" },
+  brand: { mark: "R", name: "ReproAI Prep" },
 
   nav: {
     // each label also doubles as its scroll-anchor (lowercased must match a section id below)
@@ -44,17 +44,17 @@ export const content = {
   },
 
   hero: {
-    eyebrow: "Author-facing plugin for replication packages",
+    eyebrow: "Author-facing preparation of replication packages · by Leo Yang Yang and Yiqing Xu",
     headline: { lead: "Build a package", rest: "others can ", emph: "REPRODUCE", tail: "." },
     lede:
-      "ReproAI is a plugin for agentic AI. It helps authors prepare cleaner, more readable replication packages before making them public, so journal data editors, replicators, and their AI assistants can reproduce the results with less friction. ReproAI diagnoses common package issues and rewrites a copy for clarity and consistency. Optional smoke tests or full tests then check whether the revised package actually runs. The scientific judgment behind the findings remains the authors' own.",
+      "ReproAI is a plugin for agentic AI. It helps authors prepare cleaner, more readable replication packages before making them public, so journal data editors, replicators, and their AI assistants can reproduce the results with less friction. ReproAI diagnoses common package issues and rewrites a copy for clarity and consistency. An optional rehearsal then runs a copy twice, the way a certification service will, to check that the revised package actually runs and gives the same outputs. Headed for IQSS Certify? ReproAI Prep checks Certify's entry requirements first and hands you the next steps. The scientific judgment behind the findings remains the authors' own.",
     ctaPrimary: "View on GitHub",
     ctaGhost: "How to install",
-    meta: "Works with Claude Code & OpenAI Codex CLI",
+    meta: "Works with Claude Code, OpenAI Codex CLI, or any AI assistant (PREP_PROMPT.md)",
   },
 
   engine: {
-    title: "ReproAI · the per-package workflow",
+    title: "ReproAI Prep · the per-package workflow",
     runsTag: "runs code",
     working: "working…",
     inputLabel: "Input",
@@ -93,7 +93,7 @@ export const content = {
     aiLabel: "Prompt",
     ai: {
       title: "Install or Update with your AI assistant",
-      prompt: "Install or update the ReproAI plugin for me. Fetch https://raw.githubusercontent.com/reproai/reproai/master/INSTALL_FOR_AI.md and follow it for my host (Claude Code or OpenAI Codex): if ReproAI isn't installed yet, install it; if it already is, update it to the latest. Run the commands and verify it works.",
+      prompt: "Install or update the ReproAI plugin for me. Fetch https://raw.githubusercontent.com/reproai/reproai/main/INSTALL_FOR_AI.md and follow it for my host (Claude Code or OpenAI Codex): if ReproAI isn't installed yet, install it; if it already is, update it to the latest. Run the commands and verify it works.",
       note: "Paste this into Claude Code or Codex and it installs or updates ReproAI for you. Prefer to run the commands yourself? They're in the project README on GitHub.",
     },
   },

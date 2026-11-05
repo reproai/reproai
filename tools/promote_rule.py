@@ -10,7 +10,7 @@ from typing import Any
 
 import yaml
 
-RULES_FILE = Path(__file__).resolve().parents[1] / "core/src/line1_core/rules/author_rules.yaml"
+RULES_FILE = Path(__file__).resolve().parents[1] / "core/src/reproai_prep/rules/author_rules.yaml"
 CHANGELOG = Path(__file__).resolve().parents[1] / "core/CHANGELOG.md"
 
 _REQUIRED = ["id", "category", "kind", "priority", "rule", "detection", "languages", "source_lessons"]

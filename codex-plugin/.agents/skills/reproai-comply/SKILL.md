@@ -12,7 +12,7 @@ Run the engine and present only the venue-compliance line.
 1. Confirm the package root and target venue (`aea`, `econsoc`, `apsr`, `ajps`, `jop`, `jasa`, `worldbank`, plus `generic_dataverse` / `generic_openicpsr` fallbacks).
 
 2. Run (use the bundled core form if `reproai` is not on PATH —
-   `PYTHONPATH="${REPROAI_CODEX_ROOT}/core/src" python3 -m line1_core.cli check ...`):
+   `PYTHONPATH="${REPROAI_CODEX_ROOT}/core/src" python3 -m reproai_prep.cli check ...`):
 
    ```bash
    reproai check <ROOT> --venue <VENUE> --out <ROOT>/.reproai/reports

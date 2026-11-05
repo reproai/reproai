@@ -56,7 +56,7 @@ In **the user's shell**, confirm the engine is on PATH and importable:
 
 ```
 reproai --version                                    # prints: reproai <version>
-python3 -c "import line1_core; print('ok')"          # prints: ok
+python3 -c "import reproai_prep; print('ok')"          # prints: ok
 ```
 
 Then confirm the host has the commands:

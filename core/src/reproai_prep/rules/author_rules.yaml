@@ -1,0 +1,1038 @@
+schema_version: 3
+rules_version: 2026.11.05
+fields: id | category | kind | priority(P0..P4) | rule | detection | languages | why_downstream | target_form | lossless_note
+  | propose_only | output_changing
+rules:
+- id: A3-data-load
+  category: structural
+  kind: defect
+  priority: P0
+  rule: Author should write an explicit data-load command in each script; do not assume a pre-loaded interactive session.
+  detection: A script runs estimation/regression commands but contains no use/load/read/import before them, and no upstream
+    script loads data first.
+  languages:
+  - stata
+  - r
+  - python
+  why_downstream: Run in batch (no interactive session), the estimation hits an undefined variable and the script aborts with
+    0 regressions captured — a silent or hard failure on the first real command.
+  target_form: Add the explicit data-load command (use/import/read) at the top of the script, referencing the in-package dataset
+    the analysis actually needs, before any estimation.
+  lossless_note: May only INSERT a data-load line for the dataset the script clearly expects (infer from the codebook/readme/variable
+    names). Must not change any estimation command, variable, sample filter, or guess a different dataset. If the intended
+    dataset is ambiguous, do not auto-apply — describe it.
+- id: A5-stable-includes
+  category: structural
+  kind: defect
+  priority: P0
+  rule: Author should keep filenames and `do/source` include paths consistent; renames must update all references.
+  detection: A do/source/import target string does not resolve to any present file (filename mismatch).
+  languages:
+  - stata
+  - r
+  - python
+  why_downstream: The master script calls a child script that does not exist under that name, so the run aborts before any
+    analysis script executes.
+  target_form: Update the do/source/import reference to the exact shipped filename, or rename the file to match the reference
+    — whichever the package clearly intends.
+  lossless_note: May only correct the include target string (or the filename) to a file that demonstrably ships in the package.
+    Must not change script contents, build order semantics, or invent a file that is not present.
+- id: A6-guarded-fallback-load
+  category: structural
+  kind: defect
+  priority: P0
+  rule: 'Author should confirm the intended primary dataset: a guarded `capture use A` + `if _rc!=0 { use B }` fallback is
+    normally unreachable when A ships, so B never loads.'
+  detection: '`capture [noisily/quietly] use FILE_A` then `if _rc != 0 { use FILE_B }` where both FILE_A and FILE_B exist
+    in the package.'
+  languages:
+  - stata
+  why_downstream: Which of the two datasets actually loads determines the entire analysis sample; the wrong branch silently
+    changes every coefficient. Only the author knows which dataset the paper used.
+  target_form: Author confirms the intended primary dataset and loads it unconditionally, removing the dead fallback branch.
+  lossless_note: Changing which dataset loads changes results. This requires author knowledge of which file the paper used.
+  propose_only: true
+- id: A7-var-lifecycle-contradiction
+  category: structural
+  kind: defect
+  priority: P0
+  rule: Author should not use a variable after it was dropped, excluded by keep, or renamed away — the later command will
+    fail.
+  detection: A variable appears in an estimation/use position after an explicit `drop VAR`, a `keep` that excludes it, or
+    `rename VAR newname` with no re-creation.
+  languages:
+  - stata
+  why_downstream: The later command references a variable that no longer exists, so the script aborts (or, after a rename,
+    silently uses the wrong variable). Resolving it correctly requires knowing the author's intent.
+  target_form: 'Author reconciles the variable lifecycle: either stop dropping/renaming it, re-create it before use, or update
+    the later command to the surviving name.'
+  lossless_note: The correct fix depends on which variable the author meant; changing it can alter the sample or the model.
+    Author judgment required.
+  propose_only: true
+- id: A8-data-ref-extension-mismatch
+  category: structural
+  kind: defect
+  priority: P0
+  rule: 'Author should reference data files by the exact shipped name+extension: a `use X.dta` (or extensionless `use X`)
+    whose file is missing while X.tab/X.csv ships will not load.'
+  detection: A use/import/insheet target does not resolve to a shipped file, but a same-stem file with a different extension
+    (.tab/.csv/.dta) exists in the package.
+  languages:
+  - stata
+  why_downstream: The load command points at a file extension that was not shipped, so the data never loads and the run fails
+    on the first command.
+  target_form: 'Point the load command at the shipped file: either fix the extension to the one that ships (e.g. `use X.tab`
+    → `import delimited X.tab` / `use X.dta`), matching the correct loader for that format.'
+  lossless_note: May only change the referenced extension (and the matching loader command for that format) to the same-stem
+    file that actually ships. Must not change the dataset stem, any options, or downstream commands. Pick the loader that
+    reads the shipped format correctly.
+- id: A9-nested-cd
+  category: structural
+  kind: defect
+  priority: P0
+  rule: Author should not `cd` into a subdirectory mid-script before relative file paths; it breaks when the package runs
+    from the root.
+  detection: A `cd "subdir"` (relative) appears in a script, followed by relative use/save/do/log paths.
+  languages:
+  - stata
+  why_downstream: 'Run from the package root, the relative `cd` moves into a directory that may not exist there (or shifts
+    the working directory), so every subsequent relative file path resolves wrong and the run fails. A `cd "PATH"` placeholder
+    is the same failure: it is not a real directory.'
+  target_form: Remove the mid-script `cd`, or replace a hardcoded/placeholder `cd "..."` at the very top with a single project-root
+    convention so the package runs from its root with no manual edit. Subsequent file references stay relative to the package
+    root.
+  lossless_note: May only remove the offending `cd` line, or replace a top-of-script path placeholder so paths resolve from
+    the package root. Must NOT change any file basename, dataset, save target, or estimation. Every referenced file must still
+    resolve to the same in-package target after the change.
+- id: B8-r-table-call-syntax
+  category: code-style
+  kind: defect
+  priority: P0
+  rule: 'Author should fix incomplete table-output calls: a stargazer()/xtable()/print.xtable() call with unbalanced delimiters
+    or a missing comma between arguments halts the script.'
+  detection: After masking strings/comments, a stargazer/xtable/texreg call has unbalanced ()[]{} across its multi-line span,
+    or an orphaned argument line after premature close.
+  languages:
+  - r
+  why_downstream: 'The malformed call is a syntax error: R aborts parsing the script, so nothing after it runs.'
+  target_form: Balance the delimiters / add the missing comma so the table call parses, preserving every argument and its
+    order exactly.
+  lossless_note: May only fix the delimiter/comma syntax error so the call parses. Must not add, remove, reorder, or re-value
+    any argument — only repair the punctuation that breaks parsing.
+- id: B9-suppressed-data-load
+  category: code-style
+  kind: defect
+  priority: P0
+  rule: 'Author should make data-load failures visible: wrapping `use`/`import` in `quietly` hides a missing-file error and
+    silently produces no results.'
+  detection: '`quietly`/`qui:` prefixing a use/import, or a use/import inside a `quietly { ... }` block.'
+  languages:
+  - stata
+  why_downstream: If the dataset is missing, `quietly` swallows the error and the script reports success with zero regressions
+    — the worst failure mode, because it looks like it worked.
+  target_form: Drop the `quietly`/`qui:` prefix from the data-load line so a missing-file error surfaces.
+  lossless_note: May only remove the `quietly`/`qui:` prefix from the use/import line (Tier-0 mechanical transform). Changes
+    no data, command, or option.
+- id: B10-embedded-foreign-code
+  category: code-style
+  kind: defect
+  priority: P0
+  rule: Author should not embed non-Stata code (R fragments, library() calls) inside a .do file; it halts Stata before the
+    regressions run.
+  detection: A .do file contains R-style `library(...)`, `<-` assignment, or `collin`/non-Stata blocks before estimation.
+  languages:
+  - stata
+  why_downstream: Stata cannot parse the foreign code and aborts before reaching any regression.
+  target_form: Author moves the non-Stata code to its own script in the correct language (or removes it if obsolete), keeping
+    the .do file pure Stata.
+  lossless_note: Deciding what the embedded foreign code was meant to do, and whether the analysis depends on it, requires
+    author knowledge. Do not auto-rewrite.
+  propose_only: true
+- id: C2-vendor-ado
+  category: environment
+  kind: defect
+  priority: P0
+  rule: Author should vendor user-written Stata commands (ado files) inside the package; an `ssc install` line is not a substitute.
+  detection: A known user-written command (combomarginsplot, coefplot, ivreg2, weakivtest, ...) is used but no matching .ado
+    ships in the package. An `ssc install` line no longer silences this rule — the install line itself is C10's defect.
+  languages:
+  - stata
+  why_downstream: 'On a clean machine the command is undefined, so the run halts with r(199) at the first use of it. Downstream
+    certification is stricter still: its closed run cannot reach the network, so even a working `ssc install` leaves the package
+    uncertifiable.'
+  target_form: Copy the command's files into the package under .certified/lib/ (keeping the installed tree's letter-subdirectory
+    layout) and add `adopath ++ ".certified/lib"` before first use. The stata.trk manifest of the machine's installed tree
+    lists each package's exact files, including cross-package Mata libraries such as l/livreg2.mlib.
+  lossless_note: May only ADD files under .certified/lib/ (copied verbatim from the machine's installed tree) and INSERT/REWRITE
+    loading lines to point at them. Must not change any analysis command, option, or how the command is called. Record every
+    added file and rewritten line.
+- id: A1-master-entry
+  category: structural
+  kind: defect
+  priority: P1
+  rule: Author should provide one explicit master/entry script; do not rely on alphabetical auto-run order.
+  detection: The dependency graph (the same entry_points the certification line uses) finds no single entry script that reaches
+    the rest — either no script sources/does any other, or some do but no one script ties them together; OR a __run_all that
+    depends on filename ordering.
+  languages:
+  - stata
+  - r
+  - python
+  why_downstream: Without an explicit master, the downstream pipeline must guess the run order; the wrong order produces missing-object
+    or wrong-data errors. Only the author knows the correct sequence.
+  target_form: Author adds a single master script that `do`/`source`es every analysis script in the correct dependency order.
+  lossless_note: The correct execution order is author knowledge; guessing it can corrupt results. Describe the needed master,
+    do not auto-generate one.
+  propose_only: true
+- id: B7-no-cross-script-clearall
+  category: code-style
+  kind: defect
+  priority: P1
+  rule: Author should not `clear all` between scripts in a chain; it drops programs/Mata that later scripts need.
+  detection: A non-first script in the chain begins with `clear all`.
+  languages:
+  - stata
+  why_downstream: '`clear all` wipes programs and Mata defined by an earlier script in the chain, so a later script that calls
+    them aborts with an undefined-command error.'
+  target_form: Replace `clear all` with the narrower `clear` (drops data, keeps programs/Mata), or remove it if the next script
+    reloads its own data.
+  lossless_note: May only narrow `clear all` to `clear` (or remove it) in a non-master chained script. Must not touch data-load
+    or estimation logic. This preserves the data reset while keeping programs the chain depends on.
+- id: C4-deprecated-syntax-signature
+  category: environment
+  kind: defect
+  priority: P1
+  rule: Author should avoid version-fragile command syntax (reghdfe IV-syntax, rdrobust deprecated bwselect, `table var, c(...)`,
+    `tmpdir`, legacy mixed-model commands, `cd ""`) or declare the Stata/package version it needs.
+  detection: 'Known breaking signatures: reghdfe with (endog=instr); rdrobust bwselect(CCT|IK); `table ..., c(...)`; `tmpdir`;
+    xtmelogit/meqrlogit/xtmixed; `cd ""`.'
+  languages:
+  - stata
+  why_downstream: On a newer Stata/package version the old syntax no longer parses (reghdfe IV syntax, rdrobust bwselect,
+    table c(), legacy mixed commands) and the command errors out — or worse, runs differently and shifts results.
+  target_form: Author either rewrites the command to the current supported syntax for the package they used, or declares the
+    exact Stata + package version so the downstream re-runs on the original toolchain. Rewriting a deprecated estimator's
+    syntax can change results, so author judgment is needed.
+  lossless_note: Re-expressing a deprecated estimator (reghdfe IV, rdrobust, mixed-model) can silently change estimates. Author
+    must confirm the equivalent syntax or pin the version. Do not auto-rewrite the command.
+  propose_only: true
+- id: C5-deprecated-r-packages
+  category: environment
+  kind: defect
+  priority: P1
+  rule: Author should not load removed/deprecated R packages (rgdal, rgeos, maptools, ZeligMultilevel, checkpoint, hrbrthemes);
+    loading one at the top halts the whole script.
+  detection: An uncommented `library(...)` / `require(...)` of a known-removed package.
+  languages:
+  - r
+  why_downstream: The package was removed from CRAN, so `library()` errors at the top of the script and nothing runs.
+  target_form: Author migrates to the supported replacement (rgdal/rgeos/maptools → sf/terra) and updates the affected calls,
+    or pins an archived version. Migrating changes the API calls, so author judgment is needed.
+  lossless_note: Swapping rgdal→sf etc. changes function calls and can change spatial results; the downstream analysis calls
+    must be rewritten too. Author judgment required.
+  propose_only: true
+- id: C6-old-stata-merge-syntax
+  category: environment
+  kind: defect
+  priority: P1
+  rule: Author should use modern `merge m:1`/`1:1`/`m:m` syntax; the pre-Stata-11 `merge varlist using` form fails on modern
+    Stata.
+  detection: A `merge <varlist> using ...` with no `m:1`/`1:1`/`m:m`/`1:m` join-type prefix.
+  languages:
+  - stata
+  why_downstream: Modern Stata rejects the pre-11 `merge varlist using` form (r(5) not sorted), so the merge — and everything
+    after it — fails.
+  target_form: Rewrite to `merge <cardinality> <keyvars> using <file>` where cardinality (1:1 / m:1 / 1:m) matches the ORIGINAL
+    join the author intended. The key variables and using-file must stay identical.
+  lossless_note: May only modernize the merge SYNTAX. The join cardinality (1:1/m:1/1:m) must reflect the original relationship
+    — if it cannot be determined unambiguously from the data structure, do NOT auto-apply, describe it instead. Must not change
+    key variables, the using file, or unmatched-observation handling. Choosing the wrong cardinality changes the sample, so
+    verify before applying.
+- id: C7-nonreproducible-parallel-rng
+  category: environment
+  kind: defect
+  priority: P1
+  rule: Author should make parallel random draws reproducible. A `foreach(...) %dopar%` loop (or a doParallel backend) without
+    doRNG advances a separate RNG stream on every worker, so bootstrap and simulation results change from run to run and cannot
+    be reproduced.
+  detection: An R file uses `%dopar%` with no `%dorng%` and no `registerDoRNG(...)` anywhere in the file.
+  languages:
+  - r
+  why_downstream: Each parallel worker draws from its own uninitialised stream, so a re-run produces different bootstrap CIs
+    or simulation numbers than the paper reports. The downstream reproducibility check then fails to match, and the mismatch
+    is silent.
+  target_form: 'Use the doRNG package for reproducible parallel streams: load doRNG, call `registerDoRNG(<seed>)` before the
+    loop, and keep `%dopar%` (registerDoRNG makes it reproducible) or switch the operator to `%dorng%`. After the fix, regenerate
+    the affected tables and figures, since the numbers settle once to new, now-stable values.'
+  lossless_note: 'Adding reproducible RNG changes the random draws, so the bootstrap and simulation estimates and their intervals
+    move once to new, reproducible values. This is not a formatting change: the author must re-run and update the reported
+    numbers. Propose-only; never auto-apply.'
+  propose_only: true
+  output_changing: true
+- id: C8-unseeded-stochastic
+  category: environment
+  kind: defect
+  priority: P1
+  rule: Author should set a seed before any stochastic operation (sampling, simulation, bootstrap, multiple imputation), so
+    the draws are reproducible; without one, every run produces different numbers than the paper.
+  detection: A script calls a random-draw operation (Python random.*/np.random.*/torch.rand*/sklearn random_state — note np.random.default_rng()
+    with NO argument draws OS entropy every run and no prolog can seed it; R sample/rnorm/runif/boot/Amelia/mice; Stata bootstrap/bsample/permute/simulate/runiform/rnormal)
+    with no set.seed / set seed (nor any reproducible-parallel-RNG signal) anywhere in the file. The parallel %dopar% case
+    is owned by C7.
+  languages:
+  - stata
+  - r
+  - python
+  why_downstream: With no seed, the stochastic step draws fresh numbers every run, so the regenerated tables and figures never
+    match the paper's reported values and the downstream reproducibility check fails --- silently, because the code itself
+    runs fine.
+  target_form: 'Set a seed appropriate to the BACKEND before the first draw, then regenerate the affected tables/figures:
+    serial R --- set.seed(N); foreach %dopar% --- doRNG (registerDoRNG(N) / %dorng%); future/furrr --- future.seed = TRUE
+    (or a seed); parallel::mclapply or parallel boot --- RNGkind("L''Ecuyer-CMRG") + set.seed(N); Amelia / mice --- the seed=
+    argument; Stata --- set seed N (and set rngstream under parallel). A set.seed before a %dopar% does nothing, so the seed
+    must match how the code actually parallelizes.'
+  lossless_note: 'This is NOT a semantics-preserving change: adding a seed FIXES the realized random draws, so the bootstrap/simulation/imputation
+    estimates and their intervals move once to new, now-stable values. The author must re-run and update the reported numbers.
+    Propose-only; never auto-apply, and never frame as lossless.'
+  propose_only: true
+  output_changing: true
+- id: C9-console-transcript
+  category: code-style
+  kind: defect
+  priority: P0
+  rule: Author should ship runnable code, not a pasted interactive-session transcript. A .do whose command lines keep their
+    `. ` console prompt, or whose comment lines start with `#` (not a Stata comment token), stops with r(199) on the first
+    such line and cannot be run.
+  detection: 'A .do file has one or more lines that begin with a `. ` console prompt (dot + space + a command token) or with
+    `#` at statement start (excluding the #delimit / #d family). Statement-start anchored; `*` and `//` comment lines are
+    skipped; `replace x = .`, `.5`, and `#delimit ;`/`#d cr` do not trip it.'
+  languages:
+  - stata
+  why_downstream: '`do <file>` executes line by line, so the first `. ` prompt or `#` line raises r(199) and the run halts
+    before any analysis; a static check that stays silent lets an unrunnable package look clean.'
+  target_form: 'Recover the runnable commands: strip the leading `. ` console prompts and change `#` comment markers to Stata''s
+    `*`, leaving the command text byte-identical. Then confirm the file runs with `do`.'
+  lossless_note: Removing prompts and fixing comment markers changes how the file looks but not what the commands compute;
+    still propose-only, because the author must confirm the recovered commands match their intent (a transcript can contain
+    output and error lines that are not commands).
+  propose_only: true
+- id: D7-codebook-coverage
+  category: structural
+  kind: normalization
+  priority: P3
+  rule: 'Author should document every variable the analysis uses: a codebook (or data dictionary) should define each variable
+    that appears in the estimation commands, so a replicator can tell what each regressor is.'
+  detection: The package ships a readable codebook / data-dictionary artifact, but one or more variables used in estimation
+    commands do not appear anywhere in it (tolerant substring match). Advisory only; never a blocker.
+  languages:
+  - stata
+  - r
+  why_downstream: A regressor with no codebook entry leaves the replicator guessing what the variable is and how it was built,
+    slowing the read of every model that uses it and making a coefficient mismatch harder to diagnose.
+  target_form: Add a codebook entry (name, definition, source/derivation, units) for each analysis variable that is currently
+    undocumented, so the codebook covers every variable the estimation commands reference.
+  lossless_note: Documenting a variable is purely ADDITIVE --- it writes codebook text and changes no code, data, or result.
+    The host LLM may DRAFT entries from the variable name and how it is used, but must clearly mark anything inferred for
+    the author to confirm, and must not guess a definition it cannot support.
+  propose_only: true
+- id: B11-rmd-chunk-in-r
+  category: code-style
+  kind: defect
+  priority: P0
+  rule: Author should not leave R Markdown ```{r} chunk markers in a plain .R file; they are not valid R and cause a parse
+    error.
+  detection: A line matching ```{r in a .R file.
+  languages:
+  - r
+  why_downstream: The ```` ```{r} ```` fence is not valid R syntax, so R aborts parsing the file and nothing runs.
+  target_form: Comment out the stray R Markdown fence line(s) so the file parses as plain R.
+  lossless_note: May only comment out the R-Markdown fence line(s) (Tier-0 mechanical transform). Changes no executable R
+    code.
+- id: C3-declare-stata-version
+  category: environment
+  kind: normalization
+  priority: P1
+  rule: Author should declare the Stata version (`version NN`) to avoid cross-version result drift.
+  detection: No `version NN` statement, while code uses version-sensitive commands (reghdfe, rdrobust, ivregress, etc.).
+  languages:
+  - stata
+  why_downstream: Without a `version` statement, a different Stata version may run version-sensitive commands differently
+    and shift coefficients — drift the downstream cannot detect.
+  target_form: Add a `version NN` statement at the top of the master script, NN = the Stata version the author actually ran
+    (the author must supply the exact number).
+  lossless_note: 'May INSERT a `version NN` line at the top — but NN must be the author''s actual Stata version. If unknown,
+    insert a clearly-marked placeholder (`version 17  // TODO author: confirm`) and flag it for the author. Adding `version`
+    does not change results; guessing the wrong NN can, so it must be author-confirmed.'
+- id: N1-no-delimit-semicolon
+  category: normalization
+  kind: normalization
+  priority: P2
+  rule: Author should break long commands with `///` line continuation instead of `#delimit ;`; the latter is easy to misparse
+    and one missed `;` silently merges commands.
+  detection: A `.do` file contains a `#delimit ;` (or `#d ;`) block.
+  languages:
+  - stata
+  why_downstream: Under `#delimit ;` the whole region uses `;` as the terminator; the pipeline's output-capture injection
+    and many parsers misread it, and a single missing `;` silently merges two commands into one.
+  target_form: Convert the `#delimit ;` block back to default `cr` delimiting, using `///` for line continuation on long commands.
+    Each statement ends at the line break.
+  lossless_note: 'May only re-delimit: remove `#delimit ;` / `#delimit cr`, drop the trailing `;` on each statement, and join
+    continued lines with `///`. Must preserve every command, argument, and option exactly — this is a pure formatting transform.
+    Verify no two statements get merged or split.'
+- id: N2-explicit-table-commands
+  category: normalization
+  kind: normalization
+  priority: P2
+  rule: Author should write one explicit estimation command per reported model rather than building a table inside a loop;
+    explicit commands make the model->cell mapping unambiguous for the pipeline and an LLM.
+  detection: Estimation commands occur inside a foreach/forvalues building a reported table (loop body contains both an estimator
+    and a table-export/store).
+  languages:
+  - stata
+  why_downstream: When estimations run inside a loop, the downstream pipeline cannot tell which iteration maps to which reported
+    table cell, so coefficient matching mislinks columns. Unrolling makes the model→cell mapping explicit.
+  target_form: Unroll the loop into one explicit estimation command per reported model, substituting each loop value literally
+    (e.g. `foreach x in y1 y2` over `reg `x' ...` becomes `reg y1 ...` then `reg y2 ...`). Add a `* -> Table N col k` comment
+    per command if obvious.
+  lossless_note: May only UNROLL the loop by enumerating its statically-known iterator values and substituting each into the
+    loop body verbatim. The resulting explicit commands must be byte-equivalent to what each iteration would have produced.
+    Must NOT unroll if the loop has carried state, an accumulator, a non-enumerable iterator, random-seed dependence, or side-effecting
+    generated filenames — in those cases describe it, do not apply. Preserve command order.
+- id: N3-compact-r-table-calls
+  category: normalization
+  kind: normalization
+  priority: P2
+  rule: Author should write table-output calls (stargazer/xtable) compactly with one argument per line; sprawling multi-line
+    calls are fragile to comment-cleaning and easy to misread.
+  detection: A stargazer/xtable/texreg call spans more than ~15 lines.
+  languages:
+  - r
+  why_downstream: 'A sprawling multi-line table call is fragile: when the pipeline comments out graphics/output lines it can
+    leave dangling arguments that break parsing, and humans/LLMs misread which model feeds which column.'
+  target_form: Reflow the call to one argument per line within a single balanced call, no semantic change — just tighter,
+    comment-safe formatting.
+  lossless_note: May only REFORMAT whitespace/line-breaks of the table call. Must not add, drop, reorder, or re-value any
+    argument. Pure formatting.
+- id: B1-minimize-loops
+  category: code-style
+  kind: normalization
+  priority: P2
+  rule: Author should minimize for/foreach loops that build tables; loop-built exports overwrite per iteration and obscure
+    which command maps to which table.
+  detection: An export command (esttab/outreg/putexcel using a fixed filename) appears inside a foreach/for/while body.
+  languages:
+  - stata
+  - r
+  why_downstream: A fixed export filename inside a loop is overwritten every iteration, so only the last table survives and
+    the pipeline loses the earlier ones; cmd_ids collide within the loop.
+  target_form: Either unroll the loop into explicit per-model commands, or give each iteration a distinct export filename
+    (e.g. append the loop value).
+  lossless_note: 'May unroll the loop (same constraints as N2: only statically-enumerable iterators, no carried state/seeds/side-effecting
+    names), or only parameterize the export FILENAME by the loop value. Must not change any estimation, variable, or option.
+    If unrolling is unsafe, describe it.'
+- id: B2-stata-abbrev
+  category: code-style
+  kind: normalization
+  priority: P2
+  rule: Author should use full Stata variable and command names, not abbreviations; abbreviations get truncated and shift
+    coefficients.
+  detection: 'Heuristic: Stata varlists use abbreviated tokens, or known abbreviated command forms.'
+  languages:
+  - stata
+  why_downstream: An abbreviated variable name can resolve to a different variable on a different dataset/version, silently
+    shifting coefficients; the pipeline's capture also mislabels truncated names.
+  target_form: Expand each abbreviation to the full, unambiguous variable/command name as defined in the dataset/codebook.
+  lossless_note: May only expand an abbreviation to its full name when that expansion is UNAMBIGUOUS given the dataset variables
+    (exactly one variable matches the prefix). If two or more variables share the prefix, do NOT auto-expand — describe it.
+    Expanding to the wrong variable changes results.
+- id: N4-named-estimation-calls
+  category: normalization
+  kind: normalization
+  priority: P3
+  rule: Author should call estimators directly (named, standard commands) rather than hand-rolled scalar-wrapper programs;
+    standard calls are recognized by output capture and easier to read.
+  detection: An estimation result is produced inside a user-defined `program`/function wrapper rather than a direct estimation
+    command.
+  languages:
+  - stata
+  - r
+  why_downstream: Estimation hidden inside a user program/function slips past the pipeline's output capture, so the regression
+    is run but never recorded.
+  target_form: Author refactors the wrapper so the estimator is called directly (or exposes the result), preserving the model
+    exactly.
+  lossless_note: Unwrapping a hand-rolled estimation program risks changing how the model is fit (option passing, scalar handling).
+    Author should verify equivalence. Describe, do not auto-rewrite.
+  propose_only: true
+- id: A2-table-grouping
+  category: structural
+  kind: normalization
+  priority: P3
+  rule: Author should keep all commands that build one table together, with a 'this block -> Table X' comment.
+  detection: Estimation commands feeding the same export file are scattered across distant line ranges or files.
+  languages:
+  - stata
+  - r
+  why_downstream: Scattered table-building commands make the pipeline mislink which estimation feeds which column, dropping
+    or mismatching reported cells.
+  target_form: Add a `* --> Table N` comment block above each group of commands that build a table (and, where trivially safe,
+    keep them contiguous).
+  lossless_note: May only ADD comments marking which block builds which table, and at most reorder ADJACENT independent estimation
+    commands. Must not move commands across data-modifying statements or change any command. When in doubt, only add comments.
+- id: A4-panel-declare
+  category: structural
+  kind: defect
+  priority: P3
+  rule: Author should declare the panel/time-series structure (tsset/xtset) before time-series operators.
+  detection: Time-series operators (L./D./F. or lag()) appear without a prior tsset/xtset/pdata.frame.
+  languages:
+  - stata
+  - r
+  why_downstream: L./D./F. operators error out (or compute the wrong lag) without a declared panel/time index, breaking every
+    time-series command after them.
+  target_form: Author adds `tsset <timevar>` or `xtset <panelvar> <timevar>` before the first time-series operator, using
+    the correct panel and time identifiers.
+  lossless_note: The correct panel/time key is author/dataset knowledge; inserting the wrong identifiers produces wrong lags
+    silently. Describe the needed declaration, do not guess.
+  propose_only: true
+- id: A10-commented-restricted-regression
+  category: structural
+  kind: normalization
+  priority: P3
+  rule: Author should not silently comment out a regression citing restricted data — declare it explicitly so the package's
+    scope is clear.
+  detection: 'A commented-out estimation command with nearby comment wording: restricted / confidential / proprietary / not
+    public / unavailable.'
+  languages:
+  - stata
+  - r
+  why_downstream: A silently commented-out regression makes the package look complete while a reported result cannot be regenerated
+    from the shipped data — the downstream cannot tell scope from omission.
+  target_form: Author declares the restricted-data scope explicitly (README + a clear marker) rather than a bare comment,
+    so the package's in-scope results are unambiguous.
+  lossless_note: Whether a result is genuinely restricted vs accidentally disabled is author knowledge and a scope declaration,
+    not a code edit. Describe, do not auto-change.
+  propose_only: true
+- id: B3-no-wide-wildcard
+  category: code-style
+  kind: normalization
+  priority: P3
+  rule: Author should avoid wildcard varlists that expand to very many (>20) columns in a single estimation.
+  detection: A varlist contains wildcard/stub patterns (e.g. i.*, var*) likely to expand past 20 columns.
+  languages:
+  - stata
+  why_downstream: A wildcard that expands differently across Stata vs R (collinearity drops, factor ordering) makes the two
+    toolchains disagree on which regressors enter, so coefficients diverge.
+  target_form: Author replaces the wildcard with the explicit list of variables it is meant to expand to, so the regressor
+    set is fixed and stable across toolchains.
+  lossless_note: The exact expansion depends on the dataset's columns at runtime; enumerating it requires the data. Describe
+    the issue and the explicit list the author should write — do not guess the expansion statically.
+  propose_only: true
+- id: B4-no-abs-paths
+  category: code-style
+  kind: defect
+  priority: P3
+  rule: Author should not hardcode absolute paths; use relative paths from the package root.
+  detection: A path literal starts with /, ~, a drive letter (C:\), or a UNC \\ path, or climbs out of the package with a
+    quoted ../../ (two or more levels — the certification audit treats a target that normalizes to start with .. as leaving
+    the package). SAS sources are scanned comment-aware (multi-line `* ...;` and /* */ comments blanked first); tier 1 gives
+    .sas the abs-path scan and venue abs-path check only — dependency, missing-input, and output-coverage checks do not yet
+    run on SAS.
+  languages:
+  - stata
+  - r
+  - python
+  - sas
+  why_downstream: A machine-specific absolute path does not exist on any other machine, so the load/save fails immediately
+    on the replicator's system.
+  target_form: Replace the machine-specific prefix with a relative path from the package root (or a single project-root variable
+    defined once at the top), keeping the in-package target file identical.
+  lossless_note: May only strip/replace the absolute PREFIX so the path becomes relative to the package root, pointing at
+    the SAME in-package file (same basename, same subfolder within the package). Must not change the filename, the data, or
+    any command. If the absolute path points OUTSIDE the package (data not shipped), do not invent a target — flag it as restricted/missing
+    data instead.
+- id: B5-graphics-out-of-main
+  category: code-style
+  kind: normalization
+  priority: P3
+  rule: Author should keep graphics/interactive commands out of the main analysis path.
+  detection: Graphics/interactive commands (graph, twoway, plot, View, more, pause) sit between data-load and estimation.
+  languages:
+  - stata
+  - r
+  why_downstream: Interactive commands (`more`, `pause`, `View`) block an unattended batch run, and graphics calls can error
+    on a headless machine — stalling or aborting the analysis before estimation.
+  target_form: Move graphics/interactive commands out of the data-load→estimation path (into a separate figures script), or
+    guard them so an unattended run is not blocked.
+  lossless_note: May only relocate or guard graphics/interactive commands that sit on the analysis path; must not remove or
+    alter any estimation, data, or save command. The estimation sequence and its inputs must be untouched.
+- id: B6-rederive-from-raw
+  category: code-style
+  kind: normalization
+  priority: P3
+  rule: Author should re-derive analysis variables from raw data, not consume opaque pre-computed derived columns.
+  detection: Analysis reads a derived/intermediate dataset that no shipped script regenerates from raw.
+  languages:
+  - stata
+  - r
+  - python
+  why_downstream: If a key variable is a frozen derived column with no regenerating script, the replicator cannot verify it
+    came from the raw data — and a stale/wrong stored value silently corrupts every result that uses it.
+  target_form: Author ships the script that re-derives the analysis variables from the raw data, so the chain raw→analysis
+    can be regenerated end to end.
+  lossless_note: Reconstructing the raw→derived transformation is exactly the analytical work the author must supply; it cannot
+    be inferred or auto-written. Describe what is missing, do not fabricate the derivation.
+  propose_only: true
+- id: C1-pin-deps
+  category: environment
+  kind: normalization
+  priority: P3
+  rule: Author should pin dependency versions; do not use floating versions or direct-from-GitHub installs.
+  detection: install.packages/pip install without version pins, or devtools::install_github / pip git+ URLs.
+  languages:
+  - r
+  - python
+  why_downstream: 'Floating versions mean the replicator installs whatever is current; an API change or numerical change in
+    a newer package version then shifts results or breaks the run. Note C10: an install line inside an analysis script is
+    itself a defect — pinning belongs in setup documentation (requirements.txt, a setup script), not in the run path.'
+  target_form: Pin each dependency to the version the author used (e.g. a specific CRAN version / requirements.txt with ==),
+    and prefer a registry release over a live GitHub install.
+  lossless_note: May only ADD an explicit version pin to an install line — but the pinned version must be the one the author
+    actually used (author must confirm). If unknown, insert a clearly-marked TODO placeholder and flag it. Do not change which
+    package is installed or how it is used.
+- id: C10-no-runtime-code-fetch
+  category: environment
+  kind: defect
+  priority: P0
+  rule: Author should not fetch code from the internet inside an analysis script; `ssc install`, `net install` and `install.packages`
+    do not belong in the run path.
+  detection: A script line matches `ssc install` / `net install` (Stata, any capture/quietly prefix) or `install.packages`
+    / devtools::install_* / remotes::install_* / pak (R).
+  languages:
+  - stata
+  - r
+  why_downstream: 'The line makes the run depend on a server''s availability and on whatever version it serves that day. Downstream
+    certification refuses it outright: the certified run is closed — no network — so a package that installs at run time cannot
+    be certified at all. A `capture` prefix makes it worse: on a machine without network the install silently fails and the
+    script halts later, at first use, with r(199).'
+  target_form: 'Stata: vendor the package''s files into .certified/lib/ (per C2''s target form) and comment the install line
+    out, recording what replaced it. R: move installation to setup documentation or a separate setup script that is not part
+    of the analysis run; the analysis script only calls library().'
+  lossless_note: 'Stata: may only COMMENT OUT the install line after the files it would install are vendored under .certified/lib/
+    — never before. R: may only MOVE the install line out of the analysis script (to a setup script or README); must not change
+    which package or version is installed. Must not touch any analysis command.'
+- id: C12-no-wallclock-in-output
+  category: environment
+  kind: defect
+  priority: P1
+  rule: Author should not write the wall clock, a date, or a process-unique path (tempdir, PID) into an output file; two runs
+    of the same code then differ on that line.
+  detection: A line that both reads the clock or a temp path (R Sys.time/Sys.Date/date()/tempdir/tempfile; Python time.time/datetime.now/date.today/tempfile/uuid/getpid;
+    Stata c(current_date)/c(current_time)/$S_DATE/$S_TIME) and writes (write/cat/print/save/export/display ...), or writes
+    a variable that was assigned from one.
+  languages:
+  - stata
+  - r
+  - python
+  why_downstream: The certification line runs the package twice and compares every output byte-for-byte (after stripping known
+    metadata such as PDF creation dates). A timestamp or temp path inside a table, log or CSV is a genuine difference between
+    the two runs, so the package is graded nondeterministic (T2) and refused — for a line that carries no result at all.
+  target_form: Drop the timestamp from the output, or route it to a separate run log that is not part of the results. Print
+    the clock to the console if you want it; do not write it into a file a reader will compare.
+  lossless_note: May only REMOVE the clock/temp-path expression from the written line (or comment out a line whose sole content
+    is the clock). Must not touch any value, table, or figure content. If the timestamp is the file NAME (paste0('out_', Sys.Date(),
+    '.csv')), fix the name to a fixed string — the content is unchanged.
+- id: A18-runtime-assembled-path
+  category: structural
+  kind: normalization
+  priority: P2
+  rule: Author should name each data file with a literal path at the read site; a path assembled at run time (paste0/sprintf/f-string/os.path.join
+    over a variable) cannot be checked statically.
+  detection: A read call (read.csv/readRDS/fread/read_dta/load/... ; pd.read_*/open/np.load/json.load) whose first argument
+    is a variable, a concatenation, or a formatting call rather than a string literal.
+  languages:
+  - r
+  - python
+  why_downstream: Neither this tool nor the certification audit can confirm the file exists or is inside the package, so a
+    missing-input or out-of-package read is only discovered when the run fails. A reader cannot see from the code what data
+    it depends on.
+  target_form: Write the path as one literal string per read (`read.csv('data/survey_2016.csv')`). If a loop reads many files,
+    list them explicitly or read from a literal directory with a documented pattern.
+  lossless_note: May only REPLACE the assembled expression with the literal path it evaluates to on the author's machine,
+    keeping the same file. If the expression depends on a runtime value the engine cannot resolve, describe the gap; do not
+    guess a path.
+  propose_only: true
+- id: D10-package-size-cap
+  category: structural
+  kind: defect
+  priority: P0
+  rule: Author should keep the package under 1000 MB (decimal); larger packages are refused by the certification archive at
+    preflight, before anything runs.
+  detection: The sum of all shipped file sizes exceeds 1000 MB. Evidence lists the five largest files.
+  languages:
+  - stata
+  - r
+  - python
+  why_downstream: The certification line's preflight compares the package total against the archive's ceiling and stops there;
+    nothing is run, no certificate is possible, and the author learns it only after uploading.
+  target_form: 'Move raw inputs that the shipped code does not read, intermediate datasets a script regenerates, and duplicate
+    copies out of the package; declare any file that must stay external in reproai_external.json so the certificate records
+    its digest. If the analysis data itself is over the cap, split the deposit: the code and the derived data in the certified
+    package, the raw data as a separate archived object it references.'
+  lossless_note: Removing a file the code READS changes the run; the engine must not remove anything — describe which files
+    are largest and which of them no script reads. Only the author decides what leaves the package.
+  propose_only: true
+- id: C11-no-external-adopath
+  category: environment
+  kind: defect
+  priority: P0
+  rule: Author should not point adopath/sysdir outside the package; code the scripts need must ship inside it.
+  detection: An `adopath +`/`adopath ++`/`sysdir set` line whose target is a home path (~), an absolute path, or an ..-escape
+    out of the package.
+  languages:
+  - stata
+  why_downstream: 'On any other machine that directory does not exist or holds different code, so the run halts with r(199)
+    or silently uses different program versions. Downstream certification stops at the closure check: a certified run may
+    only read what is in the package.'
+  target_form: Vendor the needed files into .certified/lib/ inside the package (per C2's target form) and rewrite the line
+    to `adopath ++ ".certified/lib"`. Which commands the external directory was providing is answered by the script's own
+    ssc-install lines or by the author.
+  lossless_note: 'May only REWRITE the adopath/sysdir target to the in-package .certified/lib/ directory after the needed
+    files are vendored there — never before. If nothing names what the external directory provides, do not guess: describe
+    the gap and ask the author. Must not touch any analysis command.'
+- id: D1-output-artifact-coverage
+  category: structural
+  kind: normalization
+  priority: P2
+  rule: Author should save each reported table's estimates and each figure to a designated relative output subfolder — a path
+    ending in tables/ for tables or figures/ for figures (e.g. output/tables/, results/tables/, or a bare tables/) — so every
+    paper artifact has a regenerating command and a known output location.
+  detection: 'Estimation commands that build reported tables run with no table-export command (esttab/outreg2/estout/putexcel/putdocx,
+    or R stargazer/texreg/write.csv of a model) writing to a relative output path; or graph/plot commands with no graph export
+    to a relative figures folder. Python (.py and notebook cells) is labeled-anchor-only: a `# Table N` / `## Figure N` header
+    whose section runs statsmodels/pandas/matplotlib code with no to_csv/to_latex/savefig export under a tables//figures/
+    path — an unlabeled python script is never demanded an artifact. Reported as ''artifact-output coverage incomplete'' —
+    NOT as a named-table claim, since the linter does not read the paper PDF.'
+  languages:
+  - stata
+  - r
+  - python
+  why_downstream: If a table's coefficients or a figure are only printed to the console / a graph window and never saved to
+    a file, the downstream check (and the author's own eyeball test against the paper) has nothing to compare — the artifact
+    has no durable, locatable output.
+  target_form: Add an export command after each table-building estimation that writes the estimates to output/tables/ (e.g.
+    `esttab ... using "output/tables/table_N.csv", replace`), and a graph-export after each figure that writes under output/figures/
+    using the author's existing device/format (keep their `.png`/`.eps`/`.svg`/etc. — only redirect the path, never convert
+    the format). Group/classify by Table/Figure with a `* --> Table N` / `* --> Figure N` comment. For base-R graphics exported
+    via `dev.copy`/`recordPlot` under `Rscript`, the auto-opened device has its display list inhibited, so the copy is empty
+    and NO file is written despite exit 0; guard once before any plotting with `if (!interactive()) { pdf(NULL); dev.control(displaylist
+    = "enable") }`, or prefer an explicit `png(...)`/`pdf(...)` device around the plot.
+  lossless_note: Output-saving commands are ADDITIVE — they write a file from an already-computed estimate/graph and cannot
+    change any coefficient, sample, or data. May only INSERT such export commands (esttab/outreg/putexcel/graph export to
+    a relative output/ path) after the command that produces the artifact. Must not alter the estimation, the graph, or any
+    option. If which estimate maps to which table is ambiguous (and no artifact manifest is provided), insert a clearly-labeled
+    generic export and flag the mapping for the author rather than guessing a table number.
+- id: A11-explicit-run-order
+  category: structural
+  kind: defect
+  priority: P1
+  rule: Author should document the exact execution order of a multi-script package — either a master script that runs every
+    script in order, or an explicit ordered list in the README.
+  detection: More than one analysis script exists, AND no single master script sources/does all of them in order, AND no README/readme
+    states an explicit run order.
+  languages:
+  - stata
+  - r
+  - python
+  why_downstream: With several scripts and no stated order, the downstream replicator must guess the sequence; the wrong order
+    produces missing-object / missing-data / wrong-sample errors. Only the author knows the intended order.
+  target_form: Author provides EITHER a master script (do/source/run each analysis script in dependency order) OR an explicit
+    numbered run-order list in the README (e.g. '1. clean.do  2. build.do  3. analysis.do').
+  lossless_note: The correct execution order is author knowledge; a linter cannot infer it reliably from a partial dependency
+    graph. Describe the missing run-order and the dependency edges it CAN see statically, but do not auto-generate a master
+    script with a guessed order.
+  propose_only: true
+- id: D3-intermediate-data-hygiene
+  category: structural
+  kind: defect
+  priority: P1
+  rule: 'Author should handle script-to-script intermediate data files cleanly: write them to a canonical data/ folder, guard
+    dependent scripts with an existence check before reading, and ship the intermediate file as part of the package.'
+  detection: A script writes a dataset (save/export/write_*/saveRDS) that a LATER script reads (use/import/read_*), i.e. an
+    intermediate data dependency across scripts — flagged when the file is written outside a canonical data/ folder, OR the
+    dependent read has no prior existence check, OR the intermediate file is not present in the shipped package.
+  languages:
+  - stata
+  - r
+  - python
+  why_downstream: If script B reads an intermediate file that script A was supposed to write, but A wasn't run, or wrote it
+    elsewhere, B fails (or silently reads a stale file). Shipping the intermediate and guarding the read lets the downstream
+    run any script independently and detect a broken chain immediately.
+  target_form: 'Write intermediate datasets to a canonical data/ folder (e.g. `save "data/intermediate.dta"`); before a dependent
+    read, add an existence guard (Stata: `capture confirm file "data/intermediate.dta"` + a clear error; R: `if (!file.exists(...))
+    stop(...)`); and include the intermediate file in the shipped package so any step can run standalone.'
+  lossless_note: May only (a) normalize the intermediate file's PATH to a relative data/ folder, keeping the same basename
+    and updating both the write and all reads consistently, and (b) INSERT an existence-check guard before a dependent read.
+    Must not change what data is written/read, the file format, or any analysis. Shipping the file is a packaging recommendation
+    for the author, not a code edit.
+  propose_only: true
+- id: D4-per-file-documentation
+  category: structural
+  kind: normalization
+  priority: P3
+  rule: 'Author should document every script and data file: a README (or a per-file README) stating, for each script, what
+    it does / which paper section or table it produces / its inputs and outputs; and for each data file, what it is and where
+    its variable definitions (codebook) live.'
+  detection: A package with multiple scripts and/or data files has no README, or a README that does not describe the individual
+    scripts and data files (only a generic note).
+  languages:
+  - stata
+  - r
+  - python
+  why_downstream: Without per-file documentation, the downstream replicator (and a reviewer) cannot tell which script produces
+    which table, what each data file is, or where variable definitions live — every file becomes a guessing exercise that
+    slows or breaks reproduction.
+  target_form: Provide a README that lists each script (purpose, paper section/table it builds, inputs, outputs) and each
+    data file (what it is, raw vs derived, where the codebook/variable definitions are). A single README with a per-file section
+    is fine; a per-file README is also acceptable.
+  lossless_note: Generating README documentation is purely ADDITIVE — it writes NEW markdown/README files describing existing
+    scripts and data; it never edits, runs, or changes any script, data, or result. The host LLM may DRAFT the README from
+    the static evidence it has (dependency graph, table->command map, data-load targets, codebook references) but should clearly
+    mark anything it inferred so the author can confirm. Do not invent a file's purpose if it cannot be inferred — flag it
+    for the author.
+- id: D5-duplicate-readme
+  category: structural
+  kind: defect
+  priority: P2
+  rule: Author should ship a single canonical README. Multiple README-like files under different names or folders can diverge
+    and give a replicator conflicting instructions.
+  detection: More than one README-like document by name and location (a same-name .md plus .pdf pair counts as one document
+    in two formats) exists in the package.
+  languages:
+  - stata
+  - r
+  - python
+  why_downstream: A replicator may follow the wrong README, run a stale install list, or apply the wrong figure-change note,
+    so the package does not reproduce as the current draft intends, and the discrepancy is easy to miss.
+  target_form: Keep one canonical README at the package root and remove or clearly archive the others; if more than one is
+    genuinely needed, reconcile them so they agree. A README.md plus its rendered README.pdf at the same location is fine.
+  lossless_note: Reconciling or removing a divergent README is an author decision, since the drafts may differ deliberately.
+    Propose the reconciliation and point to the divergent files; never auto-delete a README.
+  propose_only: true
+- id: D6-readme-missing-paths
+  category: structural
+  kind: defect
+  priority: P3
+  rule: Author should not reference files or folders in the README that the package does not contain; a replicator will look
+    for them and not find them.
+  detection: A backtick-quoted README path (a folder ending in / or a file with a code/data extension) does not resolve to
+    any file or folder in the package. Only backtick-quoted tokens are checked, so folder-tree diagrams and prose do not trigger
+    it.
+  languages:
+  - stata
+  - r
+  - python
+  why_downstream: A replicator follows the README, looks for the named path, and cannot find it, so a documented step cannot
+    be carried out and the package looks incomplete or broken.
+  target_form: Either add the referenced file or folder to the package, or correct/remove the README reference so every path
+    it names actually exists. Keep the README and the shipped files in sync.
+  lossless_note: Whether to add the missing file or fix the reference is an author decision (the path may be a typo, or the
+    file may have been left out). Propose the mismatch with the exact token; do not edit the README or invent files automatically.
+  propose_only: true
+- id: A13-unreferenced-script
+  category: structural
+  kind: defect
+  priority: P2
+  rule: Author should keep only scripts the run path actually uses; a code file the master never sources and no other script
+    calls is usually an exploratory or obsolete leftover that confuses a replicator.
+  detection: A package that has a master/sourcing structure also contains a code file that is neither sourced by another script
+    nor sources one, and whose name appears in no other script.
+  languages:
+  - stata
+  - r
+  - python
+  why_downstream: A replicator cannot tell whether the stray script is part of the analysis or dead weight, may run it and
+    hit errors, and loses time reconciling it against the documented run order.
+  target_form: Either wire the script into the master/run order if it is needed, or move it into a clearly labelled archive
+    folder (or delete it) if it is exploratory, so the public path contains only what produces the results.
+  lossless_note: Whether a stray script is needed, archivable, or deletable is an author decision; it may be a helper sourced
+    in a way the scan missed. Propose the reclassification; never auto-delete or move a script.
+  propose_only: true
+- id: A14-missing-input
+  category: structural
+  kind: defect
+  priority: P0
+  rule: 'Author should ship every input a script reads, or fix the reference: a relative data read that points at a file the
+    package does not contain --- and that no script writes --- will fail on the first command.'
+  detection: A use/read/import targets a RELATIVE literal filename that resolves to no shipped file, and no save/export/write
+    command in the package produces a file of that name (so it is not a pipeline intermediate). Absolute-path reads are reported
+    separately (B4); ambiguous and dynamic paths never raise this P0.
+  languages:
+  - stata
+  - r
+  - python
+  why_downstream: Run in batch, the load command points at a file that is not in the package and that no earlier script creates,
+    so the script aborts on the first real command with a file-not-found error and 0 results — a hard failure the author never
+    sees interactively.
+  target_form: Either add the missing input file to the package, or correct the reference to the shipped file the script actually
+    needs (fix a typo'd name or path). If the data is genuinely restricted, document it in the README data-availability section
+    and provide a public stand-in.
+  lossless_note: May only correct the read reference to a file that demonstrably ships in the package (a clear typo/path fix
+    to the same intended dataset). Must NOT invent a file, change the dataset stem, or alter any option. If nothing in the
+    package matches, do not auto-apply — flag it as missing/restricted input for the author.
+- id: A15-ambiguous-input-path
+  category: structural
+  kind: defect
+  priority: P2
+  rule: 'Author should reference inputs and includes by a path that picks exactly one file: a bare basename that matches several
+    shipped files resolves differently depending on the working directory.'
+  detection: A do/source/import/read target is a basename (or path) that matches more than one shipped file, with no exact
+    relative-path match, so the dependency graph cannot deterministically say which file loads.
+  languages:
+  - stata
+  - r
+  - python
+  why_downstream: Two files share the referenced basename, so which one the command loads depends on the run's working directory
+    and search order; a different machine can pick the other file and silently change the analysis, with no error to signal
+    it.
+  target_form: 'Make the reference unambiguous: give the path that selects the intended file (e.g. `data/clean/panel.dta`
+    rather than `panel.dta`), or rename one of the colliding files so the names no longer collide.'
+  lossless_note: May only make the reference path explicit to the ONE file the author intends among the collisions. If which
+    file is intended cannot be determined from the package structure, do NOT auto-apply — describe the collision and the candidate
+    files for the author to resolve.
+- id: N5-unsafe-filename
+  category: normalization
+  kind: normalization
+  priority: P3
+  rule: Author should name scripts and data files without spaces or shell-unsafe characters, which break command-line runs,
+    master scripts, and many tools.
+  detection: A script or data filename contains a space or a shell-unsafe character such as parentheses, ampersand, semicolon,
+    pipe, dollar sign, asterisk, question mark, angle brackets, or quotes.
+  languages:
+  - stata
+  - r
+  - python
+  why_downstream: An unquoted reference to a file whose name has a space or a shell metacharacter is split or mis-parsed,
+    so a script, master file, or wrapper that points at it fails when the package is re-run.
+  target_form: Rename the file to use only letters, digits, hyphens, and underscores, and update every reference to it; lowercase-with-underscores
+    is a safe default.
+  lossless_note: Renaming a file changes every path that points to it and must be done together with updating those references,
+    which can change behaviour if one is missed. Propose the rename and the reference updates; do not rename automatically.
+  propose_only: true
+- id: A12-table-comment-mapping
+  category: structural
+  kind: normalization
+  priority: P2
+  rule: Author should mark which block of code builds which reported table/figure with a `* --> Table N` (or `* --> Figure
+    N`) comment, so the model->table-cell mapping is explicit.
+  detection: A script contains multiple estimation commands (grouped regressions) but NO `Table N` / `Figure N` section comments
+    anchoring them — the table<->command mapping is undocumented.
+  languages:
+  - stata
+  - r
+  why_downstream: Without `-> Table N` comments, nothing tells the downstream (our D1 export injection, and Line 2's matcher)
+    which group of regressions produces which paper table. The table<->command alignment then has to be guessed — the single
+    most fragile, most token-heavy step of a reproducibility check. It also blocks per-table artifact export (D1).
+  target_form: Above each group of estimation commands that build one reported table, add a `* --> Table N` comment (and `*
+    --> Figure N` for figures). The grouping should match how the paper presents the table (one comment per reported table).
+  lossless_note: 'Adding comments is purely ADDITIVE — it changes no command, estimate, or data. BUT the actual table NUMBER
+    is a fact from the paper that is NOT in the code: the host LLM must NOT invent it. The LLM may PROPOSE a grouping from
+    code structure (consecutive regressions, shared dependent variable, a `preserve`/`eststo` block) and insert a PLACEHOLDER
+    comment like `* --> Table ?? (reproai: grouped N regressions; author, confirm the table number)`. The author fills in
+    the real number. Only when an artifact manifest or Line 2 extraction supplies the real table numbers may the placeholder
+    be replaced with a confirmed `Table N`.'
+- id: A16-no-executable-code
+  category: structural
+  kind: defect
+  priority: P1
+  rule: Author should ship the executable code (.do/.R/.py) that produces the reported results; a package with analysis data
+    but no runnable script cannot be checked for computational reproducibility.
+  detection: The package contains quantitative analysis material --- one or more data files, or a GUI-analysis project file
+    (SmartPLS .splsm, SPSS .sav, JASP .jasp, jamovi .omv, Minitab .mpj/.mtb) --- but zero substantive executable code (no
+    .do/.R/.py with any non-comment line). A document-only deposit with no data (e.g. an interview or document corpus) does
+    NOT raise this, since no computation is expected.
+  languages:
+  - stata
+  - r
+  - python
+  why_downstream: With no runnable script, the downstream reproducibility check has nothing to execute --- it cannot regenerate
+    a single table or figure, so a clean 'no blockers' result is misleading rather than reassuring. The analysis appears to
+    live in a GUI tool or was done by hand.
+  target_form: Add the script(s) that produce the reported results. For a GUI-only workflow, export the analysis to a runnable
+    script where the tool supports it, and document in the README the exact steps to reproduce each table and figure from
+    the project file.
+  lossless_note: The engine must NOT fabricate analysis code --- this is author-supplied. Describe the gap only; there is
+    nothing in the package to rewrite.
+  propose_only: true
+- id: A17-undefined-r-callable
+  category: structural
+  kind: defect
+  priority: P2
+  rule: 'Author should ship every function the code calls: a call to a function that is defined nowhere in the package and
+    exported by no declared library halts R at that line with ''could not find function'' --- typically an author-local helper
+    that never shipped.'
+  detection: 'R only, conservative by construction, judged package-GLOBALLY because library() and source() act on R''s global
+    environment (a helper sourced by a master that loads CVXR legitimately calls CVXR exports with no library() line of its
+    own). Fires ONLY when the export set is fully knowable: every library()/require() target anywhere in the package is in
+    reproai''s bundled export snapshot (rules/r_exports_db.json; one unknown package silences the whole package), no load()/attach()/Rcpp-inline
+    call injects unseen names, and every source() call has a resolved in-package target. Any name bound on an assignment LHS
+    anywhere (including function-valued variables like fmt <- make_formatter(...)), formal parameters, loop variables, and
+    all loaded snapshot exports count as defined; qualified calls (pkg::fn, obj$fn) are excluded; names inside strings and
+    comments never count. R-package SOURCE trees (a NAMESPACE/DESCRIPTION dir, or files under tests/testthat/) are exempt
+    — their callables come from NAMESPACE imports and the testthat runner, not library(). The residue of called names is flagged,
+    first occurrence per name, capped at 8.'
+  languages:
+  - r
+  why_downstream: R resolves the callable at call time, so the script runs until that line and then halts; the missing local
+    helper is one of the most common reproducibility failures, and it is silent until someone actually re-runs the code.
+  target_form: 'Ship the helper''s definition (add the missing file or the function to a shipped script), add the library()
+    call that provides it, or fix the typo in the call. The finding names the export-snapshot date: if the function comes
+    from a package version newer than the snapshot, update reproai''s rule set instead.'
+  lossless_note: Detection-only advisory. Defining or importing the function is a semantic change that is always the author's
+    call; never auto-apply. The snapshot can lag CRAN (a package may add an export after the snapshot date), which is why
+    this is P2 and propose-only.
+  propose_only: true
+- id: D8-results-not-shipped
+  category: structural
+  kind: normalization
+  priority: P3
+  rule: Author should ship the reported result artifacts (the tables and figures the analysis produces) so a reviewer has
+    something to compare a reproduction against, especially when the package has no runnable code to regenerate them.
+  detection: The package ships data but no runnable code, AND no result artifacts are present --- no shipped file lives under
+    an output/results/tables/figures folder. A document-only deposit with no data does NOT raise this (no computational results
+    are expected).
+  languages:
+  - stata
+  - r
+  - python
+  why_downstream: If neither the code that builds a result nor the result file itself ships, a reproduction has nothing to
+    diff against --- the reviewer cannot confirm any number or figure in the paper.
+  target_form: Ship the result tables and figures the paper reports (e.g. under output/tables/ and output/figures/); if they
+    currently live only in the manuscript, add them to the package so each reported artifact has a durable, comparable file.
+  lossless_note: The engine cannot generate results (there is no code to run). Describe the missing result artifacts only;
+    do not fabricate any output file.
+  propose_only: true
+- id: D9-llm-data-provenance
+  category: structural
+  kind: normalization
+  priority: P2
+  rule: 'Author should record the provenance of any LLM-generated data: the exact model id and snapshot/version, the generation
+    parameters (temperature and top-p, and the seed where the API supports one), or the raw API responses --- so the generation
+    step can be reproduced or at least audited.'
+  detection: The package ships an LLM artifact --- a file name or an .xlsx sheet name containing a strong LLM token (gpt,
+    chatgpt, llm, claude, gemini, openai, anthropic, llama, mixtral, 'large language model') --- but no README (.md/.txt/.tex/.rst
+    or .pdf) or code file records a VERSIONED model id together with a generation parameter (temperature/top-p/top-k/seed)
+    or the raw responses. The bare word `prompt` is ignored (it is a common survey/experiment variable name); provenance presence
+    is checked package-wide, not bound to each artifact.
+  languages:
+  - stata
+  - r
+  - python
+  why_downstream: 'An LLM generation step is stochastic and versioned: without the model snapshot and the parameters (or the
+    raw responses), a re-run draws different data than the paper used, and the central input to the analysis cannot be reproduced
+    or audited.'
+  target_form: 'Add a short provenance note (in the README or a manifest) recording, for each LLM-generated dataset: the exact
+    model id and snapshot date/version, temperature and top-p, the seed if the API supports one, and the prompt template.
+    Where the API is non-deterministic, ship the raw API responses alongside the derived data.'
+  lossless_note: Provenance is author knowledge the engine cannot recover from the data --- it must NOT invent a model id,
+    date, or parameter value. Describe what is missing; the author supplies the real values.
+  propose_only: true

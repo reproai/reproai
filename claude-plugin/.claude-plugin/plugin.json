@@ -1,9 +1,9 @@
 {
   "name": "reproai",
-  "version": "0.4.10",
-  "description": "ReproAI Prep — author-facing pre-diagnose for replication packages. The static commands (check, comply, fix) scan a working directory, apply an author rule set and a venue profile (AEA, ...), and advise how to reorganize the package so a downstream reproducibility check passes on the first try — without executing author code. The optional debug command runs the package as a smoke test (does it run, did the injected table/figure outputs appear). ReproAI Prep never compares coefficients and never issues a reproducibility verdict. Certification (close, certify, deposit) is a separate, independently versioned component.",
+  "version": "0.8.0",
+  "description": "ReproAI Prep: prepares a replication package for a journal's reproducibility check or a certification service. The static commands (check, comply, fix) scan a working directory, apply an author rule set and a venue profile (AEA, ...), and advise how to reorganize the package so the downstream check passes on the first try, without executing author code. The optional debug and prepare commands run a copy: a smoke test (does it run, did the table and figure outputs appear), or a rehearsal that runs it twice the way a certification service such as IQSS Certify will. ReproAI Prep never compares coefficients and never issues a reproducibility verdict or a certificate.",
   "author": {
-    "name": "reproAI"
+    "name": "Leo Yang Yang and Yiqing Xu"
   },
   "homepage": "https://github.com/reproai/reproai",
   "license": "MIT",

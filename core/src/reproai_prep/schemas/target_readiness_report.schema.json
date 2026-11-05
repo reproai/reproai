@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reproai/prep/target_readiness_report.schema.json",
+  "title": "Certification target readiness",
+  "description": "A static prediction of what a certification service (e.g. IQSS Certify) will refuse, fail, mark, warn about or note. Never the service's verdict.",
+  "type": "object",
+  "required": ["schema_version", "generated_by", "root", "target", "name", "profile_version", "basis", "status", "summary", "items", "disclaimer"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "generated_by": {"type": "string"},
+    "root": {"type": "string"},
+    "target": {"type": "string"},
+    "name": {"type": "string"},
+    "profile_version": {"type": "string"},
+    "basis": {"type": "object", "additionalProperties": {"type": "string"}},
+    "status": {"enum": ["blocked", "needs_attention", "no_static_obstacle"]},
+    "summary": {
+      "type": "object",
+      "required": ["refuse", "run_fails", "mark", "warning", "note"],
+      "additionalProperties": {"type": "integer", "minimum": 0}
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["advisory_id", "rule_id", "effect", "priority", "message", "evidence_count"],
+        "properties": {
+          "advisory_id": {"type": "string"},
+          "rule_id": {"type": "string"},
+          "effect": {"enum": ["refuse", "run_fails", "mark", "warning", "note"]},
+          "priority": {"enum": ["P0", "P1", "P2", "P3", "P4"]},
+          "message": {"type": "string"},
+          "evidence_count": {"type": "integer", "minimum": 1}
+        }
+      }
+    },
+    "reworded_advice": {"type": "array", "items": {"type": "string"}},
+    "disclaimer": {"type": "string"}
+  }
+}

@@ -2,17 +2,17 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-marketplace.json",
   "name": "reproai",
   "owner": {
-    "name": "ReproAI"
+    "name": "Leo Yang Yang and Yiqing Xu"
   },
   "metadata": {
-    "description": "ReproAI — author-facing pre-diagnose for replication packages.",
-    "version": "0.4.10"
+    "description": "ReproAI Prep — prepare a replication package for reproducibility checks and certification.",
+    "version": "0.8.0"
   },
   "plugins": [
     {
       "name": "reproai",
       "source": "./claude-plugin",
-      "description": "Static pre-diagnose: audit/reorganize a replication package so a downstream reproducibility check passes first-try. Venue profiles (AEA, Econometric Society, APSR, AJPS, JOP, ...) + author rule set. No code execution."
+      "description": "Prepare a replication package for a journal's reproducibility check or a certification service such as IQSS Certify: a static check against an author rule set and a venue or certification profile (never runs author code), approved repairs on a copy, an optional rehearsal that runs a copy twice, and a handoff. Never issues a verdict or a certificate."
     }
   ]
 }

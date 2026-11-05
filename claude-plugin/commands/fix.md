@@ -42,8 +42,11 @@ You never decide reproducibility and never execute the author's analysis code. R
    If `reproai` is not on PATH, use the bundled core:
 
    ```bash
-   PYTHONPATH="${CLAUDE_PLUGIN_ROOT}/core/src" python3 -m line1_core.cli check <ROOT> --venue <VENUE> --out <ROOT>/.reproai/reports
+   PYTHONPATH="${CLAUDE_PLUGIN_ROOT}/core/src" python3 -m reproai_prep.cli check <ROOT> --venue <VENUE> --out <ROOT>/.reproai/reports
    ```
+
+   If the package is headed for IQSS Certify, add `--target certify` here and on every re-check, so
+   the plan carries Certify's requirements and its re-worded advice.
 
 2. **Make the working copy** (the original is never touched):
 
