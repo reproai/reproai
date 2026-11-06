@@ -66,6 +66,7 @@ export const content = {
       { name: "/reproai:fix", note: "Repairs you approve, made on a copy, then re-checked" },
       { name: "/reproai:debug", note: "Rehearsal: runs the copy twice under certification settings and compares the outputs", runs: true },
       { name: "reproai handoff", note: "Run order, libraries, what is still open, next steps for the destination" },
+      { name: "reproai certify-start", note: "For IQSS Certify: checks that it can start, walks you to its button, then steps back" },
     ],
     outputLabel: "Output · findings graded by priority (examples)",
     advisory: [
@@ -80,7 +81,7 @@ export const content = {
     extras: [
       {
         cmd: "/reproai:prepare",
-        note: "The whole flow in one pass: check, approved repairs, rehearsal and handoff. It asks before it runs your code or changes anything.",
+        note: "The whole flow in one pass: check, approved repairs, rehearsal and handoff, then, for IQSS Certify, the way to its button. It asks before it runs your code or changes anything.",
       },
       {
         cmd: "/reproai:map",
@@ -220,7 +221,7 @@ export const content = {
       },
       {
         q: "How does it relate to IQSS Certify?",
-        a: "Certify (certify.iq.harvard.edu) certifies a replication dataset at publication. ReproAI Prep is independent of Certify and shares no code with it. With `--target certify` it checks, before you start Certify, the entry requirements we read from Certify's published program (24 rules), and writes a readiness report naming the effect of each finding at Certify: refuse, run fails, mark, warning or note. Prep never runs Certify's own steps; it tells you when you will need them. Certify's closing is the only authority on whether a package closes.",
+        a: "Certify (certify.iq.harvard.edu) certifies a replication dataset at publication. ReproAI Prep is independent of Certify and shares no code with it. With `--target certify` it checks, before you start Certify, the entry requirements we read from Certify's published program (24 rules), and writes a readiness report naming the effect of each finding at Certify: refuse, run fails, mark, warning or note. When the copy is ready, `reproai certify-start` checks that Certify can start and gives you the steps from your draft dataset's Certify button. Once you paste Certify's form, Prep steps back and your assistant follows Certify's own instructions; Prep's commands never run Certify's steps or read the form. Certify's closing is the only authority on whether a package closes.",
       },
       {
         q: "Which venues does it support?",

@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from . import GENERATED_BY, coordinator, inventory, notes, rehearse
+from . import GENERATED_BY, certify_start, coordinator, inventory, notes, rehearse
 from .rule_engine import _R_LIB_CALL, _strip_comment_keep_strings
 
 # R's base and recommended packages ship with R; Certify never copies them
@@ -98,23 +98,28 @@ def build(root: Path, venue: str | None = None, target: str | None = None, scrip
 
     steps: list[dict[str, str]] = []
     if target == "certify":
-        quoted = " ".join(f"--target {shlex.quote(s)}" for s in order) or "--target <script>"
+        # Certify is started from the author's draft dataset (its Certify button gives the form an AI
+        # assistant follows), not by commands the author types; its own steps are named for the record.
         steps.append({"who": "you", "step": "Ask the author to approve the run order", "how": ", then ".join(order) or "(no R or Python script found)"})
         if stata:
-            steps.append({"who": "author", "step": "Certify 0.2.0 does not run Stata", "how": "certify later, or leave the Stata scripts out and say so in CERTIFICATION-NOTES.txt"})
-        steps.append({"who": "certify", "step": "Check the run order and what closing would refuse", "how": "certify targets <prepared copy>"})
+            steps.append({"who": "author", "step": "Certify 0.2.0 stops on any .do file",
+                          "how": "leave the Stata scripts out of the prepared copy and say so in CERTIFICATION-NOTES.txt, or certify later"})
+        steps.append({"who": "you", "step": "Check that Certify can start, and write the author's steps",
+                      "how": f"reproai certify-start {shlex.quote(str(root))} --out <handoff folder> (writes {certify_start.START_NAME})"})
+        steps.append({"who": "author", "step": "Start Certify from the draft dataset",
+                      "how": "Edit Dataset, Configure Options, Certify; paste that page's form into the AI assistant and give the prepared copy as the folder"})
         if libs["R"] or libs["python"]:
             steps.append({"who": "certify", "step": "Copy the libraries the scripts load into .certified/lib/",
-                          "how": f"certify vendor <prepared copy> {quoted}"})
+                          "how": "Certify's Step 2b (certify vendor), run by the assistant under Certify's instructions"})
         if restricted:
-            steps.append({"who": "author", "step": "Say which kind of confidential data this is (restricted, licensed, secure facility)",
-                          "how": "then Certify's Step 2a: certify restrict, or certify declare --held"})
+            steps.append({"who": "certify", "step": "Ask which kind of confidential data this is (restricted, licensed, secure facility)",
+                          "how": "Certify's Step 2a (certify restrict, or certify declare --held)"})
         if outside:
-            steps.append({"who": "certify", "step": "Ship or declare each file read from outside the package", "how": "copy it in, or certify declare (Step 2)"})
+            steps.append({"who": "certify", "step": "Ship or declare each file read from outside the package", "how": "Certify's Step 2 (copy it in, or certify declare)"})
         if services:
-            steps.append({"who": "certify", "step": "Record the outside-service calls once", "how": f"certify record <prepared copy> {quoted} [--env-stdin KEY]"})
-        steps.append({"who": "certify", "step": "Continue with Certify's own Step 3 (register) and Step 4 (close)",
-                      "how": f"certify close <prepared copy> {quoted}; ReproAI Prep stops here"})
+            steps.append({"who": "certify", "step": "Record the outside-service calls once", "how": "Certify's Step 2c (certify record)"})
+        steps.append({"who": "certify", "step": "Register, close, deposit, run, submit, wait for the seal, publish",
+                      "how": "Certify's Steps 3 to 10, under its own instructions; ReproAI Prep stops here"})
     else:
         if venue_block:
             pending = [c["requirement"] for c in venue_block.get("checks", []) if c.get("status") == "needs_author_action"]
@@ -149,6 +154,9 @@ def markdown(h: dict[str, Any]) -> str:
     lines = ["# Handoff", "", f"Package: `{h['root']}`"]
     dest = h["destination"]
     lines.append(f"Destination: {'IQSS Certify' if dest['target'] == 'certify' else (dest['venue'] or 'manual deposit')}")
+    if dest["target"] == "certify":
+        lines.append(f"To start Certify: see `{certify_start.START_NAME}` beside this file, "
+                     f"or run `reproai certify-start {h['root']}` to write it.")
     if h["readiness"]:
         lines.append(f"Static readiness: **{h['readiness']['status']}**")
     if h["rehearsal"]:

@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "ReproAI Prep — prepare a replication package for reproducibility checks and certification.",
-    "version": "0.8.2"
+    "version": "0.8.3"
   },
   "plugins": [
     {

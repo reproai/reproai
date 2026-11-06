@@ -22,6 +22,7 @@ reproai check path/to/package --target certify --out reports/
 | `reproai fix` | Applies the semantics-preserving fixes to a **copy** (dry run by default); the original is never touched. |
 | `reproai rehearse` | **Runs code, on a copy, only when asked.** Runs the entry scripts twice the way a certification service will (from the root, network denied as far as the machine allows, a private empty home, fixed time zone and locale, figures to files, each step seeded) and compares the outputs: identical, numerically close, or different. |
 | `reproai handoff` | Where preparation stops: the run order, the libraries to vendor, what is still open, files read from outside, and the next steps for the destination. |
+| `reproai certify-start` | For IQSS Certify, after the handoff: checks that Certify can start (static readiness, no Stata files, runtimes, a Python 3.12 or newer for Certify's program, the service and its published checksums) and writes `CERTIFY_START.md`, the steps from the draft dataset's Certify button. Reads public files only; never installs or runs Certify. |
 | `reproai note` | Records one approved repair in the prepared copy's `CERTIFICATION-NOTES.txt`. |
 | `reproai gate`, `outputs`, `map`, `readme`, `contribute` | Output-export gate (every table and figure has an export), runtime output check (every expected file was written by this run; formerly `verify`), manuscript exhibit map, README scaffold, and a pre-filled issue for a missed rule or a false flag. |
 

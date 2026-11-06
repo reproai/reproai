@@ -31,6 +31,33 @@ export const changelog = {
 
   releases: [
     {
+      version: "0.8.3",
+      date: "November 6, 2026",
+      title: "When you prepare for IQSS Certify, your assistant checks that Certify can start and walks you to its button.",
+      changes: [
+        {
+          tag: "New",
+          text: "`reproai certify-start` checks that IQSS Certify can start on your prepared copy: nothing that would make Certify refuse it, no Stata `.do` files (Certify 0.2.0 runs R and Python only), the runtimes your scripts need, a Python 3.12 or newer for Certify's own program, that Certify's service answers, and that its two published checksum lists agree. It writes `CERTIFY_START.md`, the steps from your draft dataset's Certify button. It reads public files only and never installs or runs Certify.",
+        },
+        {
+          tag: "New",
+          text: "`/reproai:prepare` ends a preparation for Certify with one question: start now, just the steps, or not now. Start now walks you to the Certify button on your draft dataset. Once you paste Certify's form, ReproAI Prep steps back and your assistant follows Certify's own instructions in the same chat.",
+        },
+        {
+          tag: "Improved",
+          text: "Your answers on the intake form carry through to Certify. \"Not sure\" prepares for your journal and offers Certify at the end. \"Do not run my code\" gets a reminder that Certify runs your scripts three times. \"Do not change any of my files\" still offers Certify, and `CERTIFY_START.md` tells you to tick the same box in Certify's form.",
+        },
+        {
+          tag: "Improved",
+          text: "The handoff points to the Certify button instead of listing Certify commands for you to type. The prepared copy is named `<name>-prepared`, since Certify names its work folder after the folder you give it.",
+        },
+        {
+          tag: "Fixed",
+          text: "The Claude Code commands no longer look for the engine inside the plugin, which does not carry it; they give the install line instead. The instructions for other assistants install the engine from the public repository.",
+        },
+      ],
+    },
+    {
       version: "0.8.2",
       date: "November 6, 2026",
       title: "The command that checks a run's output files is renamed for what it does.",

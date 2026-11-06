@@ -22,10 +22,11 @@ does not mean the package reproduces.
    reproai map <ROOT> --manuscript <PAPER.tex> --out <ROOT>/.reproai/output_map.json
    ```
 
-   If `reproai` is not on PATH, run from the bundled core:
+   If `reproai` is not on PATH, the engine is not installed (the plugin carries only the commands).
+   Install it, then run the command above:
 
    ```bash
-   PYTHONPATH="${CLAUDE_PLUGIN_ROOT}/core/src" python3 -m reproai_prep.cli map <ROOT> --manuscript <PAPER.tex> --out <ROOT>/.reproai/output_map.json
+   python3 -m pip install -U "git+https://github.com/reproai/reproai#subdirectory=core"
    ```
 
 3. Read `output_map.json`. If `status` is not `ok` (`manuscript_not_found`, `unsupported_format`),

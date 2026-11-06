@@ -27,10 +27,11 @@ never execute the author's code.
    reproai check <ROOT> --venue <VENUE> --out <ROOT>/.reproai/reports
    ```
 
-   If `reproai` is not on PATH, run from the bundled core:
+   If `reproai` is not on PATH, the engine is not installed (the plugin carries only the commands).
+   Install it, then run the command above:
 
    ```bash
-   PYTHONPATH="${CLAUDE_PLUGIN_ROOT}/core/src" python3 -m reproai_prep.cli check <ROOT> --venue <VENUE> --out <ROOT>/.reproai/reports
+   python3 -m pip install -U "git+https://github.com/reproai/reproai#subdirectory=core"
    ```
 
 3. Read the reports the engine wrote:

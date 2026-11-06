@@ -39,10 +39,11 @@ You never decide reproducibility and never execute the author's analysis code. R
    reproai check <ROOT> --venue <VENUE> --out <ROOT>/.reproai/reports
    ```
 
-   If `reproai` is not on PATH, use the bundled core:
+   If `reproai` is not on PATH, the engine is not installed (the plugin carries only the commands).
+   Install it, then run the command above:
 
    ```bash
-   PYTHONPATH="${CLAUDE_PLUGIN_ROOT}/core/src" python3 -m reproai_prep.cli check <ROOT> --venue <VENUE> --out <ROOT>/.reproai/reports
+   python3 -m pip install -U "git+https://github.com/reproai/reproai#subdirectory=core"
    ```
 
    If the package is headed for IQSS Certify, add `--target certify` here and on every re-check, so

@@ -26,6 +26,18 @@ watch:
     CERTIFY_PROMPT.md: "17a7bc7b50070bc64da2c3ed50262e9a8c03e273ee617525fea42fe979abc61f"
     dist/author_program-0.2.0-py3-none-any.whl: "87be5ad8bb9f79ddf567cfe73d2d1801ad2702c4496d491637f7230ee0bec8d1"
     dist/rulebook-0.2.0-py3-none-any.whl: "ec0bfdf4b0ca529890cf178b0e2284685febba3035a7caa692c55874b227088d"
+# How an author starts Certify (read 2026-11-06 from the site's "Get started" and the instructions'
+# Step 0 and Step 3): on a draft dataset in the repository, Edit Dataset, Configure Options, Certify;
+# that page's form (archive address, dataset identifier, a time-limited uploader secret for that one
+# draft) is pasted into an AI assistant, which follows the instructions. `reproai certify-start`
+# checks what it can before that and writes the steps; it never runs Certify's program.
+entry:
+  service: "https://certify.iq.harvard.edu"
+  sums_mirror: "https://iqss-research.github.io/certify/SHA256SUMS"
+  instructions: "https://certify.iq.harvard.edu/CERTIFY_PROMPT.md"
+  repository: "https://demo.dataverse.org"
+  program_python: [3, 12]
+  beta: "Certify is in beta: certificates are stored on demo.dataverse.org, Dataverse's test site."
 
 rules:
   - id: CF1-stata-not-runnable

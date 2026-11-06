@@ -32,7 +32,8 @@ You point it at a messy replication package (Stata / R / Python). It:
    explains the root cause, offers options, and asks you to decide.
 5. **Hands off** — a prepared copy with every approved change recorded in
    `CERTIFICATION-NOTES.txt`, and a handoff that names the run order, the libraries, what is
-   still open, and the next steps for your destination.
+   still open, and the next steps for your destination. For IQSS Certify, it then checks that
+   Certify can start and offers to walk you to your draft dataset's Certify button.
 
 > **Trust boundary.** ReproAI Prep never compares your coefficients to the paper and never issues a
 > "reproducible / certified" verdict — that is a separate downstream step. The static commands
@@ -43,7 +44,7 @@ You point it at a messy replication package (Stata / R / Python). It:
 
 | Command | What it does |
 |---|---|
-| `/reproai:prepare` | The whole preparation in one pass: check, approved repairs on a copy, rehearsal (with permission), handoff. |
+| `/reproai:prepare` | The whole preparation in one pass: check, approved repairs on a copy, rehearsal (with permission), handoff, and for IQSS Certify the way in. |
 | `/reproai:check` | One-shot static pre-diagnose → 4 JSON reports (architecture, advisory, venue compliance, risk register), plus a certification-readiness report with `--target certify`. |
 | `/reproai:comply` | Just the target-journal replication-package checklist (AEA, …). |
 | `/reproai:fix` | Apply the advisory fixes to a **copy** under a lossless contract; re-check; iterate. Chain: **A12 → N2 → D1** (anchor table comments → unroll loops → export per-table outputs). |
@@ -75,8 +76,8 @@ rule set is generic guidance and names no specific paper.
 Fill in [`PREP_INTAKE.txt`](PREP_INTAKE.txt) and paste it into your assistant (Claude, Codex, or
 another that can run commands). It points the assistant at [`PREP_PROMPT.md`](PREP_PROMPT.md),
 which takes it through the same steps as `/reproai:prepare`: the static check, approved repairs
-on a copy, a rehearsal if you allow it, and the handoff. The engine's commands are `reproai
-check`, `fix`, `rehearse`, `note` and `handoff`.
+on a copy, a rehearsal if you allow it, the handoff and, for IQSS Certify, the way in. The
+engine's commands are `reproai check`, `fix`, `rehearse`, `note`, `handoff` and `certify-start`.
 
 ## Preparing for IQSS Certify
 
@@ -92,9 +93,18 @@ and writes `target_readiness_report.json`: `blocked`, `needs_attention` or
 `no_static_obstacle`, each finding with the effect it has at Certify (refuse, run fails, mark,
 warning, note).
 
-ReproAI Prep is independent of Certify and shares no code with it. It never runs Certify's own
-steps (`vendor`, `restrict`, `declare`, `record`, `close`); it tells you when you will need them.
-Certify's closing is the only authority on whether a package closes.
+Certify is started from your draft dataset in the repository: Edit Dataset, Configure Options,
+Certify, and that page gives a form you paste into your AI assistant, which then follows Certify's
+own instructions. After the handoff, `reproai certify-start <prepared copy>` checks that Certify can
+start (the static readiness, no Stata files, the runtimes, a Python 3.12 or newer for Certify's
+program, the service answering, Certify's published checksums agreeing and unchanged since these
+rules were read) and writes `CERTIFY_START.md`, the steps; `/reproai:prepare` then asks whether to
+start now and, if you paste the form, hands over to Certify's instructions in the same chat.
+
+ReproAI Prep is independent of Certify and shares no code with it. It never installs or runs
+Certify's program, never sees the form's secret, and never runs Certify's own steps (`vendor`,
+`restrict`, `declare`, `record`, `close`). Certify's closing is the only authority on whether a
+package closes.
 
 ## Install
 

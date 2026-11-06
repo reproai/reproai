@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 from . import __version__, contribute, coordinator, inventory, targets
+from . import certify_start as certify_start_mod
 from . import fix_applier
 from . import fix_planner
 from . import gate as gate_mod
@@ -172,6 +173,24 @@ def _cmd_handoff(args: argparse.Namespace) -> int:
     elif not args.out:
         print(handoff_mod.markdown(h))
     return 0
+
+
+def _cmd_certify_start(args: argparse.Namespace) -> int:
+    root = Path(args.path).resolve()
+    if not root.is_dir():
+        print(f"error: not a directory: {root}", file=sys.stderr)
+        return 2
+    a = certify_start_mod.assess(root, venue=args.venue, online=not args.offline, no_changes=args.no_changes)
+    if args.out:
+        _, m = certify_start_mod.write(a, Path(args.out))
+        print(f"written: {m}")
+    if args.json:
+        print(json.dumps(a, indent=2, ensure_ascii=False))
+    elif not args.out:
+        print(certify_start_mod.markdown(a))
+    else:
+        print(f"can start: {a['status']}")
+    return 1 if a["status"] == "not_ready" else 0
 
 
 def _cmd_notes(args: argparse.Namespace) -> int:
@@ -394,6 +413,15 @@ def build_parser() -> argparse.ArgumentParser:
     handoff.add_argument("--out", default=None, help="Directory to write HANDOFF.md and handoff.json.")
     handoff.add_argument("--json", action="store_true", help="Print the handoff as JSON.")
     handoff.set_defaults(func=_cmd_handoff)
+
+    cstart = sub.add_parser("certify-start", help="After preparation for IQSS Certify: check that Certify can start (static readiness, runtimes, the service and its published files) and write CERTIFY_START.md, the steps from your draft dataset's Certify button. Never runs Certify.")
+    cstart.add_argument("path", help="Path to the prepared copy.")
+    cstart.add_argument("--venue", default=None, help="Venue profile id (e.g. aea).")
+    cstart.add_argument("--offline", action="store_true", help="Skip the service and checksum checks (no network).")
+    cstart.add_argument("--no-changes", action="store_true", help="The author asked that nothing be changed: the steps say to tick the same box in Certify's form.")
+    cstart.add_argument("--out", default=None, help="Directory to write CERTIFY_START.md and certify_start.json.")
+    cstart.add_argument("--json", action="store_true", help="Print the result as JSON.")
+    cstart.set_defaults(func=_cmd_certify_start)
 
     note = sub.add_parser("note", help="Record one approved repair in the prepared copy's CERTIFICATION-NOTES.txt.")
     note.add_argument("path", help="Path to the prepared copy.")

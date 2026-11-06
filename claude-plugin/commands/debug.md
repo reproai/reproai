@@ -110,6 +110,17 @@ for the author's eyeball test against the paper.
      reproducibility verdict; eyeball the tables/figures against the paper. Certification, if you
      want it, is the certification service's own step."
 
+7. **If the copy is headed for IQSS Certify** (the author said so, or it was checked with
+   `--target certify`), end with the way in, as `/reproai:prepare` step 7 does: run
+   `reproai certify-start <copy> --out <copy's parent>/handoff` (if the engine answers that
+   `certify-start` is unknown, it is older than this plugin: update it first with
+   `python3 -m pip install -U "git+https://github.com/reproai/reproai#subdirectory=core"`). On `not_ready`, say what stops it and
+   offer to fix it. Otherwise ask one question with `AskUserQuestion`, "Start IQSS Certify now?":
+   **Start now (Recommended)** (walk the author to the draft dataset's Certify button, wait for the
+   pasted form, say "From here Certify's own instructions apply; ReproAI Prep stops here", then follow
+   https://certify.iq.harvard.edu/CERTIFY_PROMPT.md exactly with this copy as the folder), **Just the
+   steps** (`CERTIFY_START.md`), **Not now**.
+
 ## Hard rules
 
 - Run only the copy; never run-modify the original.
