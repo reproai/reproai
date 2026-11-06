@@ -100,9 +100,15 @@ class RunResult:
 
 # --- what runs, and how ----------------------------------------------------------------------
 
-def run_order(root: Path, explicit: list[str] | None = None) -> list[str]:
-    """The scripts to run, in order: the author's list, or the R and Python entry scripts (scripts
-    nothing else calls) in path order, which is what a certification service proposes."""
+_REHEARSABLE = (".r", ".py")
+_ENTRY_SUFFIXES = (".r", ".py", ".do")
+
+
+def run_order(root: Path, explicit: list[str] | None = None, suffixes: tuple[str, ...] = _REHEARSABLE) -> list[str]:
+    """The scripts to run, in order: the author's list, or the entry scripts (scripts nothing else
+    calls) in path order, which is what a certification service proposes. By default only R and
+    Python, what a rehearsal runs; the handoff passes `_ENTRY_SUFFIXES` so a journal's run order
+    keeps the Stata scripts."""
     if explicit:
         for rel in explicit:
             p = (root / rel).resolve()
@@ -114,8 +120,13 @@ def run_order(root: Path, explicit: list[str] | None = None) -> list[str]:
     # every script nothing else calls, in path order (not only the orchestrators: a package of
     # independent scripts runs them all)
     called = {e.dst for e in edges if e.edge_class == "include" and e.resolved}
-    scripts = [e.path for e in entries if e.path.lower().endswith((".r", ".py")) and not e.path.startswith(".certified/")]
+    scripts = [e.path for e in entries if e.path.lower().endswith(suffixes) and not e.path.startswith(".certified/")]
     return sorted(s for s in scripts if s not in called)
+
+
+def entry_order(root: Path, explicit: list[str] | None = None) -> list[str]:
+    """The run order to show the author and a data editor: every entry script, Stata included."""
+    return run_order(root, explicit, _ENTRY_SUFFIXES)
 
 
 def network_means() -> str:
@@ -387,7 +398,9 @@ _MEANING = {
 def rehearse(root: Path, scripts: list[str] | None = None, runs: int = 2, timeout: int = DEFAULT_TIMEOUT,
              interpreters: dict[str, str] | None = None, workdir: Path | None = None, keep: bool = False) -> dict[str, Any]:
     root = root.resolve()
-    order = run_order(root, scripts)
+    # an approved order may name a Stata script: it is not run (never hand a .do file to R), only listed
+    asked = run_order(root, scripts)
+    order = [s for s in asked if s.lower().endswith(_REHEARSABLE)]
     chosen = {"R": shutil.which("Rscript") or "Rscript", "python": shutil.which("python3") or "python3"}
     chosen.update(interpreters or {})
     means = network_means()
@@ -406,7 +419,7 @@ def rehearse(root: Path, scripts: list[str] | None = None, runs: int = 2, timeou
         if not keep:
             shutil.rmtree(base, ignore_errors=True)
     grade = _grade(results, diffs)
-    skipped = sorted(e.path for e in inventory.scan(root) if e.language == "stata")
+    skipped = sorted({e.path for e in inventory.scan(root) if e.language == "stata"} | {s for s in asked if s not in order})
     return {
         "schema_version": 1,
         "generated_by": GENERATED_BY,

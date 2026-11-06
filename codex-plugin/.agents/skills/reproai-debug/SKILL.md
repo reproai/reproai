@@ -80,13 +80,14 @@ auto-fix errors silently. **Every fix is the author's decision.**
    R or Python was rehearsed, and: "This is a rehearsal — the code runs and emits its artifacts. NOT
    a reproducibility verdict; eyeball against the paper."
 7. If the copy is headed for IQSS Certify (the author said so, or it was checked with `--target
-   certify`), end with the way in, as `reproai prepare` step 7 does: run `reproai certify-start <copy>
+   certify`), end with the way in, as `reproai prepare` Step 6 does: run `reproai certify-start <copy>
    --out <copy's parent>/handoff` (if the engine answers that `certify-start` is unknown, update it
    first: `git -C "$REPROAI_CODEX_ROOT" pull && python3 -m pip install -e "$REPROAI_CODEX_ROOT/core"`).
-   On `not_ready`, say what stops it and offer to fix it. Otherwise ask
+   On `not_ready`, say what stops it and offer to fix it where a repair could clear it (if it is a
+   Stata script the author keeps, say that Certify cannot start on this copy). Otherwise ask
    one numbered question, "Start IQSS Certify now? 1. Start now (recommended) 2. Just the steps
-   3. Not now". Start now: walk the author to the draft dataset's Certify button, wait for the pasted
-   form, say "From here Certify's own instructions apply; ReproAI Prep stops here", then follow
+   3. Not now". Start now: give `CERTIFY_START.md`'s steps one at a time, up to filling in the copied form, wait
+   for the pasted form, say "From here Certify's own instructions apply; ReproAI Prep stops here", then follow
    https://certify.iq.harvard.edu/CERTIFY_PROMPT.md exactly with this copy as the folder.
 
 ## Hard rules

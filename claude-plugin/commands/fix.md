@@ -43,7 +43,7 @@ You never decide reproducibility and never execute the author's analysis code. R
    Install it, then run the command above:
 
    ```bash
-   python3 -m pip install -U "git+https://github.com/reproai/reproai#subdirectory=core"
+   python3 -m pip install -U reproai-prep
    ```
 
    If the package is headed for IQSS Certify, add `--target certify` here and on every re-check, so

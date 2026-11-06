@@ -26,7 +26,7 @@ does not mean the package reproduces.
    Install it, then run the command above:
 
    ```bash
-   python3 -m pip install -U "git+https://github.com/reproai/reproai#subdirectory=core"
+   python3 -m pip install -U reproai-prep
    ```
 
 3. Read `output_map.json`. If `status` is not `ok` (`manuscript_not_found`, `unsupported_format`),

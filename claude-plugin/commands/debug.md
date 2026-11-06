@@ -111,13 +111,15 @@ for the author's eyeball test against the paper.
      want it, is the certification service's own step."
 
 7. **If the copy is headed for IQSS Certify** (the author said so, or it was checked with
-   `--target certify`), end with the way in, as `/reproai:prepare` step 7 does: run
+   `--target certify`), end with the way in, as `/reproai:prepare` Step 6 does: run
    `reproai certify-start <copy> --out <copy's parent>/handoff` (if the engine answers that
    `certify-start` is unknown, it is older than this plugin: update it first with
+   `python3 -m pip install -U reproai-prep`, and if it is still unknown, install the development version,
    `python3 -m pip install -U "git+https://github.com/reproai/reproai#subdirectory=core"`). On `not_ready`, say what stops it and
-   offer to fix it. Otherwise ask one question with `AskUserQuestion`, "Start IQSS Certify now?":
-   **Start now (Recommended)** (walk the author to the draft dataset's Certify button, wait for the
-   pasted form, say "From here Certify's own instructions apply; ReproAI Prep stops here", then follow
+   offer to fix it where a repair could clear it (if it is a Stata script the author keeps, say that
+   Certify cannot start on this copy). Otherwise ask one question with `AskUserQuestion`, "Start IQSS Certify now?":
+   **Start now (Recommended)** (give `CERTIFY_START.md`'s steps one at a time, up to filling in the
+   copied form, wait for the pasted form, say "From here Certify's own instructions apply; ReproAI Prep stops here", then follow
    https://certify.iq.harvard.edu/CERTIFY_PROMPT.md exactly with this copy as the folder), **Just the
    steps** (`CERTIFY_START.md`), **Not now**.
 

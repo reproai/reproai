@@ -120,10 +120,20 @@ it. The manual steps follow below.
 ```
 /plugin marketplace add reproai/reproai
 /plugin install reproai@reproai                                          # plugin@marketplace
-python3 -m pip install "git+https://github.com/reproai/reproai#subdirectory=core"  # the engine, on PATH
+python3 -m pip install -U reproai-prep                                   # the engine (stable release), on PATH
 ```
 
 Both install globally — then run `/reproai:check` in any project that contains your replication package.
+
+**Stable or development engine.** `reproai-prep` on the Python Package Index is the released, stable
+engine. To run the newest rules and venue profiles before they are released, install the development
+version from GitHub instead:
+
+```
+python3 -m pip install -U "git+https://github.com/reproai/reproai#subdirectory=core"  # development version
+```
+
+To go back to the stable release: `python3 -m pip install --force-reinstall reproai-prep`.
 
 **OpenAI Codex**
 
@@ -134,7 +144,9 @@ cd reproai
 python3 -m pip install -e core         # put the reproai engine on PATH
 ```
 
-Then ask Codex for `/reproai-check` in any project.
+Then ask Codex for `/reproai-check` in any project. The Codex install runs the engine from your
+clone, so it follows the development version. For the stable release, run
+`python3 -m pip install -U reproai-prep` in place of the last line.
 
 ## Update
 
@@ -146,8 +158,10 @@ Rules and venue profiles live in the engine, so refresh **both** the plugin (com
 /plugin marketplace update reproai
 /plugin update reproai                                                      # latest commands
 /reload-plugins
-python3 -m pip install -U "git+https://github.com/reproai/reproai#subdirectory=core"  # latest rules + venues
+python3 -m pip install -U reproai-prep                                       # latest stable rules + venues
 ```
+
+On the development version, update with `python3 -m pip install -U "git+https://github.com/reproai/reproai#subdirectory=core"` instead.
 
 **OpenAI Codex**
 

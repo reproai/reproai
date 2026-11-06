@@ -161,7 +161,8 @@ def _cmd_handoff(args: argparse.Namespace) -> int:
         return 2
     rehearsal = json.loads(Path(args.rehearsal).read_text(encoding="utf-8")) if args.rehearsal else None
     try:
-        h = handoff_mod.build(root, venue=args.venue, target=args.target, scripts=args.script, rehearsal=rehearsal)
+        h = handoff_mod.build(root, venue=args.venue, target=args.target, scripts=args.script, rehearsal=rehearsal,
+                              out_dir=Path(args.out) if args.out else None)
     except ValueError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2

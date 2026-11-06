@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "reproai-prep"
-version = "0.8.3"
+version = "0.8.4"
 description = "ReproAI Prep: audits and prepares a replication package so it runs from scratch on a clean machine and meets a journal's or a certification service's entry requirements."
 readme = "README.md"
 requires-python = ">=3.10"

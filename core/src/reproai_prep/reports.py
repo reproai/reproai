@@ -88,8 +88,8 @@ def _evidence_lines(evidence: list[dict[str, Any]]) -> str:
 def _fix_prompt(f: Finding) -> str:
     """A self-contained natural-language rewrite directive for the host LLM."""
     mode = (
-        "PROPOSE ONLY — describe the fix to the author; do NOT edit code (this finding is "
-        "too semantic to rewrite safely)."
+        "PROPOSE ONLY — do not rewrite this on your own (it is too semantic to rewrite safely): "
+        "describe the fix to the author, and change code only if the author approves that exact change."
         if f.propose_only
         else "REWRITE — apply this fix to the copy, honoring the lossless contract."
     )

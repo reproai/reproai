@@ -75,11 +75,13 @@ def _evidence_files(items: list[dict[str, Any]], rule_ids: tuple[str, ...]) -> l
 
 
 def build(root: Path, venue: str | None = None, target: str | None = None, scripts: list[str] | None = None,
-          rehearsal: dict[str, Any] | None = None) -> dict[str, Any]:
+          rehearsal: dict[str, Any] | None = None, out_dir: Path | None = None) -> dict[str, Any]:
     root = root.resolve()
     result = coordinator.check(root, venue, target)
     items = result["advisory_plan"]["items"]
-    order = rehearse.run_order(root, scripts)
+    # every entry script, Stata included: a data editor runs them all, even where Certify cannot
+    order = rehearse.entry_order(root, scripts)
+    approved = bool(scripts)
     libs = libraries(root)
     readiness = result["target_readiness_report"]
     venue_block = result["venue_compliance_report"]
@@ -100,14 +102,20 @@ def build(root: Path, venue: str | None = None, target: str | None = None, scrip
     if target == "certify":
         # Certify is started from the author's draft dataset (its Certify button gives the form an AI
         # assistant follows), not by commands the author types; its own steps are named for the record.
-        steps.append({"who": "you", "step": "Ask the author to approve the run order", "how": ", then ".join(order) or "(no R or Python script found)"})
+        if not approved:
+            steps.append({"who": "you", "step": "Ask the author to approve the run order", "how": ", then ".join(order) or "(no script found)"})
         if stata:
             steps.append({"who": "author", "step": "Certify 0.2.0 stops on any .do file",
-                          "how": "leave the Stata scripts out of the prepared copy and say so in CERTIFICATION-NOTES.txt, or certify later"})
+                          "how": ("the author's choice: certify later, or leave out of the prepared copy only Stata scripts that "
+                                  "produce no reported result (record it with `reproai note`); a journal's deposit needs the rest")})
+        where = shlex.quote(str(out_dir.resolve())) if out_dir else "<handoff folder>"
         steps.append({"who": "you", "step": "Check that Certify can start, and write the author's steps",
-                      "how": f"reproai certify-start {shlex.quote(str(root))} --out <handoff folder> (writes {certify_start.START_NAME})"})
-        steps.append({"who": "author", "step": "Start Certify from the draft dataset",
-                      "how": "Edit Dataset, Configure Options, Certify; paste that page's form into the AI assistant and give the prepared copy as the folder"})
+                      "how": (f"reproai certify-start {shlex.quote(str(root))} --out {where} (writes {certify_start.START_NAME}; "
+                              "add --no-changes if the author asked that nothing be changed)")})
+        blocked = bool(readiness) and readiness["status"] == "blocked"
+        steps.append({"who": "author", "step": "Start Certify from the draft dataset, once certify-start says it can start",
+                      "how": ("not yet: the static check predicts Certify would refuse this copy (see Still open)" if blocked else
+                              f"the steps in {certify_start.START_NAME}: Edit Dataset, Configure Options, Certify; fill in and paste that page's form")})
         if libs["R"] or libs["python"]:
             steps.append({"who": "certify", "step": "Copy the libraries the scripts load into .certified/lib/",
                           "how": "Certify's Step 2b (certify vendor), run by the assistant under Certify's instructions"})
@@ -133,6 +141,7 @@ def build(root: Path, venue: str | None = None, target: str | None = None, scrip
         "root": str(root),
         "destination": {"target": target, "venue": venue},
         "run_order": order,
+        "run_order_approved": approved,
         "libraries": libs,
         "readiness": {"status": readiness["status"], "summary": readiness["summary"]} if readiness else None,
         "rehearsal": {"grade": rehearsal["grade"], "meaning": rehearsal["meaning"],
@@ -161,7 +170,10 @@ def markdown(h: dict[str, Any]) -> str:
         lines.append(f"Static readiness: **{h['readiness']['status']}**")
     if h["rehearsal"]:
         lines.append(f"Rehearsal: **{h['rehearsal']['grade']}** ({h['rehearsal']['meaning']})")
-    lines += ["", "## Run order", *[f"{i}. `{s}`" for i, s in enumerate(h["run_order"], 1)]]
+    heading = "## Run order (approved by the author)" if h.get("run_order_approved") else "## Run order (proposed; the author approves it)"
+    lines += ["", heading, *[f"{i}. `{s}`" for i, s in enumerate(h["run_order"], 1)]]
+    if any(s.lower().endswith(".do") for s in h["run_order"]):
+        lines.append("Stata scripts are listed for the journal's run; a rehearsal does not run them, and Certify 0.2.0 cannot.")
     libs = h["libraries"]
     if libs["R"] or libs["python"]:
         lines += ["", "## Libraries the scripts load"]

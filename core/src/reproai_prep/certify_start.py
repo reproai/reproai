@@ -216,13 +216,18 @@ def markdown(a: dict[str, Any]) -> str:
     lines += [f"- [{mark[c['ok']]}] {c['message']}" for c in a["checks"]]
     if a["status"] == "not_ready":
         lines += ["", "## First", "Repair what is unticked above (`/reproai:fix`, or the repairs step of `/reproai:prepare`), "
-                  "then run `reproai certify-start` again."]
+                  "then run `reproai certify-start` again. If what stops it is something you chose to keep, such as a "
+                  "Stata script, Certify cannot start on this copy; the preparation for your journal still stands."]
     else:
         repo = a["repository"].rstrip("/")
         lines += ["", "## Start (about five minutes, then a wait of one to three hours)"]
         if a["beta"]:
-            lines.append(a["beta"])
+            lines.append(a["beta"] + " That certificate is separate from the deposit your journal asks for; "
+                         "deposit with the journal as it says.")
         lines.append("Certify runs your scripts on this computer three times: two practice runs and the certified run.")
+        box = ("tick [x] \"Do not change any of my files, even in a copy\", as you asked here: Certify then stops and "
+               "tells you instead of proposing repairs" if a["no_changes"] else
+               "leave \"Do not change any of my files, even in a copy\" unticked, so Certify can still propose its own repairs")
         lines += [
             "",
             f"1. Open {repo} and log in, or create an account.",
@@ -231,14 +236,12 @@ def markdown(a: dict[str, Any]) -> str:
             "\"Replication Data for: <your paper's title>\"), the authors, a contact, a one-paragraph description "
             "and a subject, and save it. Nothing is public until you publish.",
             "4. On the draft's page, click Edit Dataset, then Certify under Configure Options. A page called Certify opens.",
-            "5. Click Copy the form and paste it into a chat with an AI assistant that can run commands on this "
-            "computer (the chat where you ran ReproAI Prep will do).",
-            f"6. When the assistant asks for your replication dataset's folder, give the prepared copy: `{a['prepared_copy']}`. "
-            + ("Tick \"Do not change any of my files, even in a copy\", as you asked here: Certify then stops and tells you "
-               "instead of proposing repairs." if a["no_changes"] else
-               "Leave \"Do not change any of my files, even in a copy\" unticked, so Certify can still propose its own repairs."),
-            f"7. The assistant follows Certify's own instructions from there ({a['instructions']}). "
-            "Do not click Publish Dataset until it tells you the certificate is sealed.",
+            "5. Click Copy the form. Before you paste it, fill in the copied text: after \"Your replication dataset's "
+            f"folder on this computer:\" write the prepared copy, `{a['prepared_copy']}`; {box}; and leave \"Publish as "
+            "soon as it is certified\" unticked, so the dataset stays a draft until you say \"publish\".",
+            "6. Paste the filled form into a chat with an AI assistant that can run commands on this computer (the chat "
+            f"where you ran ReproAI Prep will do). It follows Certify's own instructions from there ({a['instructions']}).",
+            "7. Do not click Publish Dataset until the assistant tells you the certificate is sealed.",
             "",
             "The form carries a secret for your draft. Paste it only into the assistant's chat, never into a file or an email.",
         ]

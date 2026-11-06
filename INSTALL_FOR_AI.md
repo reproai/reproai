@@ -27,12 +27,14 @@ Run the first two commands **inside Claude Code** (slash commands), and the `pip
 ```
 /plugin marketplace add reproai/reproai
 /plugin install reproai@reproai                                          # plugin@marketplace
-python3 -m pip install "git+https://github.com/reproai/reproai#subdirectory=core"  # the engine, on PATH
+python3 -m pip install -U reproai-prep                                   # the engine (stable release), on PATH
 ```
 
 - `/plugin marketplace add …` — runs in Claude Code. Success: the `reproai` marketplace is registered.
 - `/plugin install reproai@reproai` — runs in Claude Code. Success: the `/reproai:*` commands appear.
 - `python3 -m pip install …` — runs in the user's shell. Success: pip reports `reproai-prep` installed and `reproai --version` runs.
+- Only if the user asks for the development version (the newest rules before they are released), install
+  it from GitHub instead: `python3 -m pip install -U "git+https://github.com/reproai/reproai#subdirectory=core"`.
 
 ## Step 2B — install in OpenAI Codex CLI
 
@@ -87,8 +89,10 @@ Refresh **both** the plugin (commands) and the engine (rules + venue profiles).
 /plugin marketplace update reproai
 /plugin update reproai          # latest commands
 /reload-plugins
-python3 -m pip install -U "git+https://github.com/reproai/reproai#subdirectory=core"  # latest rules + venues
+python3 -m pip install -U reproai-prep  # latest stable rules + venues
 ```
+
+If the user runs the development version, update the engine with `python3 -m pip install -U "git+https://github.com/reproai/reproai#subdirectory=core"` instead.
 
 **OpenAI Codex CLI** — in the user's shell (pull the repo, then):
 

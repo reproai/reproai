@@ -1,5 +1,5 @@
 schema_version: 3
-rules_version: 2026.11.05
+rules_version: 2026.11.06
 fields: id | category | kind | priority(P0..P4) | rule | detection | languages | why_downstream | target_form | lossless_note
   | propose_only | output_changing
 rules:
@@ -719,13 +719,17 @@ rules:
   why_downstream: If a table's coefficients or a figure are only printed to the console / a graph window and never saved to
     a file, the downstream check (and the author's own eyeball test against the paper) has nothing to compare — the artifact
     has no durable, locatable output.
-  target_form: Add an export command after each table-building estimation that writes the estimates to output/tables/ (e.g.
+  target_form: 'Add an export command after each table-building estimation that writes the estimates to output/tables/ (e.g.
     `esttab ... using "output/tables/table_N.csv", replace`), and a graph-export after each figure that writes under output/figures/
-    using the author's existing device/format (keep their `.png`/`.eps`/`.svg`/etc. — only redirect the path, never convert
-    the format). Group/classify by Table/Figure with a `* --> Table N` / `* --> Figure N` comment. For base-R graphics exported
-    via `dev.copy`/`recordPlot` under `Rscript`, the auto-opened device has its display list inhibited, so the copy is empty
-    and NO file is written despite exit 0; guard once before any plotting with `if (!interactive()) { pdf(NULL); dev.control(displaylist
-    = "enable") }`, or prefer an explicit `png(...)`/`pdf(...)` device around the plot.
+    using the author''s existing device/format (keep their `.png`/`.eps`/`.svg`/etc.; never convert the format). Where a script
+    already writes the table or figure to a file, leave that command as it is: moving it changes where the author''s outputs
+    are, which is the author''s choice, so mention the convention instead. Create a new output folder in the script before
+    its first write (R `dir.create("output/tables", recursive = TRUE, showWarnings = FALSE)`, Stata `capture mkdir "output/tables"`,
+    Python `os.makedirs("output/tables", exist_ok=True)`) rather than shipping an empty folder. Group/classify by Table/Figure
+    with a `* --> Table N` / `* --> Figure N` comment. For base-R graphics exported via `dev.copy`/`recordPlot` under `Rscript`,
+    the auto-opened device has its display list inhibited, so the copy is empty and NO file is written despite exit 0; guard
+    once before any plotting with `if (!interactive()) { pdf(NULL); dev.control(displaylist = "enable") }`, or prefer an explicit
+    `png(...)`/`pdf(...)` device around the plot.'
   lossless_note: Output-saving commands are ADDITIVE — they write a file from an already-computed estimate/graph and cannot
     change any coefficient, sample, or data. May only INSERT such export commands (esttab/outreg/putexcel/graph export to
     a relative output/ path) after the command that produces the artifact. Must not alter the estimation, the graph, or any
@@ -767,13 +771,15 @@ rules:
   why_downstream: If script B reads an intermediate file that script A was supposed to write, but A wasn't run, or wrote it
     elsewhere, B fails (or silently reads a stale file). Shipping the intermediate and guarding the read lets the downstream
     run any script independently and detect a broken chain immediately.
-  target_form: 'Write intermediate datasets to a canonical data/ folder (e.g. `save "data/intermediate.dta"`); before a dependent
-    read, add an existence guard (Stata: `capture confirm file "data/intermediate.dta"` + a clear error; R: `if (!file.exists(...))
-    stop(...)`); and include the intermediate file in the shipped package so any step can run standalone.'
+  target_form: 'Before a dependent read, add an existence guard (Stata: `capture confirm file "data/intermediate.dta"` + a
+    clear error; R: `if (!file.exists(...)) stop(...)`; Python: `if not os.path.exists(...): raise SystemExit(...)`). Keep
+    the file where it is written when the README or the author names that place; otherwise suggest a canonical data/ folder
+    (e.g. `save "data/intermediate.dta"`, updating the write and every read) and let the author decide. Include the intermediate
+    file in the shipped package so any step can run standalone.'
   lossless_note: May only (a) normalize the intermediate file's PATH to a relative data/ folder, keeping the same basename
-    and updating both the write and all reads consistently, and (b) INSERT an existence-check guard before a dependent read.
-    Must not change what data is written/read, the file format, or any analysis. Shipping the file is a packaging recommendation
-    for the author, not a code edit.
+    and updating both the write and all reads consistently, and only when the README does not name its current place and the
+    author agrees, and (b) INSERT an existence-check guard before a dependent read. Must not change what data is written/read,
+    the file format, or any analysis. Shipping the file is a packaging recommendation for the author, not a code edit.
   propose_only: true
 - id: D4-per-file-documentation
   category: structural

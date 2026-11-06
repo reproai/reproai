@@ -31,6 +31,33 @@ export const changelog = {
 
   releases: [
     {
+      version: "0.8.4",
+      date: "November 6, 2026",
+      title: "Install the stable release from the Python Package Index, and a smoother way into IQSS Certify.",
+      changes: [
+        {
+          tag: "New",
+          text: "ReproAI Prep is on the Python Package Index: `python3 -m pip install -U reproai-prep` installs the stable release. The development version, with the newest rules and journal profiles before they are released, still installs from GitHub.",
+        },
+        {
+          tag: "Improved",
+          text: "The proposed run order lists every entry script, Stata included, and the handoff says whether you approved it. A rehearsal still runs only R and Python and names the Stata scripts it did not run.",
+        },
+        {
+          tag: "Improved",
+          text: "`CERTIFY_START.md` has you fill in the folder and the \"Do not change any of my files\" box in Certify's form before you paste it, and says that a certificate on Dataverse's test site is separate from your journal's deposit.",
+        },
+        {
+          tag: "Improved",
+          text: "Ticking \"Do not change any of my files\" still lets your assistant rehearse the package, if you allow running it, and write the handoff. When Certify cannot start because of something you chose to keep, such as a Stata script, the assistant says so and stops instead of offering to start.",
+        },
+        {
+          tag: "Fixed",
+          text: "The advice on output folders no longer moves files your scripts already write, and says to create new folders in the script rather than ship empty ones. An intermediate file is moved only if you agree, and an assistant never recommends leaving out a Stata script that produces a result.",
+        },
+      ],
+    },
+    {
       version: "0.8.3",
       date: "November 6, 2026",
       title: "When you prepare for IQSS Certify, your assistant checks that Certify can start and walks you to its button.",

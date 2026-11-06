@@ -13,7 +13,7 @@
 #   note      -- `certify targets` or closing prints a note; a repair to propose
 target: certify
 name: IQSS Certify
-profile_version: "2026.11.05.1"
+profile_version: "2026.11.06.1"
 basis:
   author_program: "0.2.0"
   rulebook: "0.2.0"
@@ -404,6 +404,8 @@ rules:
 # this target (another rule above covers it); the text fields replace the generic ones; `certify_effect`
 # and `priority` say what Certify does with the finding when it is more than the generic rule says.
 overrides:
+  A1-master-entry:
+    target_form: "Certify proposes every script nothing else calls, in path order, and the author approves that order at its Step 1. If the order matters, name the scripts so path order is the run order (01_clean.R, 02_models.py), or add one master script in R or Python that sources the others; Certify does not run a shell script."
   B4-no-abs-paths:
     target_form: "Spell paths from the root. Certify refuses a read or a folder change that points outside the dataset (CF5, judged as its audit resolves paths); a written path or other string is not refused but still ties the code to one machine. A file from outside: copy it into the prepared copy, or declare one with a public address (`certify declare`)."
   C1-pin-deps:

@@ -32,9 +32,10 @@ steps.
    (`.R`/`.r` R, `.py` Python, `.do` Stata) and read the README for the title and the run order.
 2. Install the engine if `reproai --version` does not answer, and update it the same way if it
    answers that a command used below is unknown (an engine older than these instructions):
-   `python3 -m pip install -U "git+https://github.com/reproai/reproai#subdirectory=core"` (Python
-   3.10 or newer). Report the version. Never stand in for a missing command by doing its checks
-   yourself.
+   `python3 -m pip install -U reproai-prep` (the stable release; Python 3.10 or newer). If a command is still
+   unknown after that, these instructions are newer than the stable release: install the development
+   version, `python3 -m pip install -U "git+https://github.com/reproai/reproai#subdirectory=core"`.
+   Report the version. Never stand in for a missing command by doing its checks yourself.
 3. Make a work folder outside the package (the form's, or `~/replication-prep/<name>-<date>/`) and
    copy the package into it as `<work>/<name>-prepared` (`<name>` is the package folder's name; IQSS
    Certify names its own work folder after the folder it is given). Say which folder you are making
@@ -44,7 +45,9 @@ steps.
    (b) licensed: the author may not deposit them; (c) in a secure facility. Record the answer.
 5. If the package will be certified by IQSS Certify, every `reproai` command below takes
    `--target certify`. Certify 0.2.0 runs R and Python only: if the package has Stata scripts, say
-   so now; the journal-side preparation still applies. If the form says **not sure**, prepare for
+   so now; the journal-side preparation still applies. Whether to leave them out of the copy is the
+   author's choice: never recommend it for a script that produces a reported result, which the
+   journal's deposit needs. If the form says **not sure**, prepare for
    the journal only (no `--target certify`) and offer Certify as an option at Step 6.
 
 ## Step 1. The static check
@@ -63,15 +66,16 @@ engine cannot verify (`needs_author_action`) as a separate checklist.
 ## Step 2. Propose the run order
 
 Show the order the engine proposes (`reproai handoff <work>/<name>-prepared` prints it: every script
-nothing else calls, in path order) in plain words, and wait for a yes. If the README describes
+nothing else calls, in path order, Stata included) in plain words, and wait for a yes. If the README describes
 another order, or slow scripts whose results are saved, present the choice; the author decides.
 Use the approved order everywhere below, one `--script` per script.
 
 ## Step 3. Repairs, only with approval
 
 If the form says "do not change any of my files", make no repairs and hand the author the
-reports. Then stop, unless the package goes to IQSS Certify or the form says not sure: in that case
-go to Step 6 first, on the unchanged copy, with `--no-changes`.
+reports, then go on with Step 4 (unless the form also says "do not run my code") and Step 5 on the
+unchanged copy; at Step 6, if the package goes to IQSS Certify or the form says not sure, pass
+`--no-changes`.
 
 Otherwise, starting with P0: for each finding, read its `fix_prompt`, propose the smallest change
 that fixes it without changing what the code computes, show the before and after lines, and wait.
@@ -85,7 +89,8 @@ reproai note <work>/<name>-prepared --change "<the change, in one sentence>" --a
 ```
 
 This keeps `CERTIFICATION-NOTES.txt` in the prepared copy, the record IQSS Certify asks for and a
-journal's data editor reads. Re-run Step 1 until no P0 remains.
+journal's data editor reads. Re-run Step 1 until no P0 remains, or until each P0 left is one the
+author chose to keep; say which, and go on.
 
 ## Step 4. Rehearse (runs code; ask first)
 
@@ -109,8 +114,10 @@ propose the fix for its cause the same way. Stata scripts are not rehearsed; say
 
 ```bash
 reproai handoff <work>/<name>-prepared --venue <venue> [--target certify] --script <first> ... \
-  --rehearsal <work>/rehearsal.json --out <work>/handoff
+  [--rehearsal <work>/rehearsal.json] --out <work>/handoff
 ```
+
+Pass `--rehearsal` only if Step 4 ran.
 
 Show the author `HANDOFF.md`: the approved run order, the libraries the scripts load, what is
 still open, files read from outside the package, calls to outside services, and the next steps for
@@ -133,15 +140,19 @@ It checks the static readiness, that the copy holds no Stata files (Certify 0.2.
 the service answers, and that Certify's two published checksum lists agree and still match what
 ReproAI Prep's Certify rules were read from. It writes `CERTIFY_START.md`, the author's steps, and
 exits 1 when Certify cannot start yet. It judges the copy against Certify's rules even when the
-preparation did not use them.
+preparation did not use them. If the machine is offline or your host blocks its network checks, run
+it again with `--offline` and tell the author that the service and Certify's published files were
+not checked.
 
 Before the question, say what the form's answers change:
 
 - **Not sure about Certify:** say in two sentences what Certify gives and takes: a certificate on
   the dataset's page that the results were produced from the exact files deposited; it needs an
   account at the repository, runs the scripts on this computer three times, and takes about five
-  minutes of the author's time and a wait of one to three hours. If `certify-start` says
-  `not_ready`, say what Certify would need and offer to go back to Step 3 with `--target certify`.
+  minutes of the author's time and a wait of one to three hours. While Certify is in beta the
+  certificate sits on Dataverse's test site, apart from the deposit the journal asks for. If
+  `certify-start` says `not_ready`, say what Certify would need and offer to go back to Step 3 with
+  `--target certify`.
 - **"Do not run my code":** Certify runs the scripts on this computer three times (two practice
   runs and the certified run). Say so plainly, and do not mark Start now as recommended; the author
   chooses again.
@@ -149,18 +160,23 @@ Before the question, say what the form's answers change:
   to tick the same box in Certify's form, so that Certify stops and reports instead of proposing
   repairs.
 
-- **Cannot start yet** (`not_ready`): do not offer to start. Say what stops it, in plain words, and
-  offer to go back to the repairs (Step 3) or the rehearsal (Step 4).
+- **Cannot start yet** (`not_ready`): do not offer to start. Say what stops it, in plain words.
+  Offer to go back only where that could clear it: to a repair the author has not declined (Step 3),
+  or to the rehearsal (Step 4) if the form allows running the code. If what stops it is something the
+  author chose to keep, such as a Stata script, say that Certify cannot start on this copy until that
+  changes, and stop.
 - **Otherwise** (`ready`, or `attention`, whose unticked checks you list first): ask one question,
   "Start IQSS Certify now?", with three answers: **Start now** (recommended unless the form said
   "do not run my code": you walk the author to
   the draft's Certify button and continue in this chat under Certify's instructions), **Just the
   steps** (`CERTIFY_START.md`, for later or for another chat), **Not now**. Use your host's question
   tool if it has one (in Claude Code, AskUserQuestion); otherwise ask it as a numbered question.
-- **Start now.** Give the steps of `CERTIFY_START.md` one at a time. For the draft dataset, offer a
-  title ("Replication Data for: <the paper's title>"), the authors, a one-paragraph description and
-  a subject, drafted from the README, for the author to copy. Then wait for the form. When the author
-  pastes it, say in one line: "From here Certify's own instructions apply; ReproAI Prep stops here."
+- **Start now.** Give the steps of `CERTIFY_START.md` one at a time, up to and including filling in
+  the copied form (the prepared copy as the folder, and the "Do not change any of my files" box as
+  `CERTIFY_START.md` says). For the draft dataset, offer a title ("Replication Data for: <the
+  paper's title>"), the authors, a one-paragraph description and a subject, drafted from the README
+  for the author to copy; ask for what the README does not say. Then wait for the filled form. When
+  the author pastes it, say in one line: "From here Certify's own instructions apply; ReproAI Prep stops here."
   Fetch and follow https://certify.iq.harvard.edu/CERTIFY_PROMPT.md exactly, starting with its own
   checksum checks, with the prepared copy as the replication dataset's folder. After that, run no
   `reproai` command, and keep the form's secret only where Certify's instructions put it. One thing
@@ -170,8 +186,9 @@ Before the question, say what the form's answers change:
 
 ## Deliverables
 
-- `<work>/<name>-prepared`: the prepared copy, with `CERTIFICATION-NOTES.txt` listing every approved change
+- `<work>/<name>-prepared`: the prepared copy, with `CERTIFICATION-NOTES.txt` listing every approved
+  change (there is no notes file when nothing was changed)
 - `<work>/reports`: the static check's reports
 - `<work>/rehearsal.json`: the rehearsal, if the author allowed it
 - `<work>/handoff/HANDOFF.md` and `handoff.json`
-- For IQSS Certify: `<work>/handoff/CERTIFY_START.md` and `certify_start.json`
+- For IQSS Certify, or when the form says not sure: `<work>/handoff/CERTIFY_START.md` and `certify_start.json`

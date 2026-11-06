@@ -9,10 +9,13 @@ results with a paper and never issues a reproducibility verdict or a certificate
 is a separate, downstream step that Prep prepares a package for.
 
 ```bash
-pip install reproai-prep
+pip install -U reproai-prep            # the stable release
 reproai check path/to/package --venue aea --out reports/
 reproai check path/to/package --target certify --out reports/
 ```
+
+The development version, with the newest rules and venue profiles before they are released:
+`pip install -U "git+https://github.com/reproai/reproai#subdirectory=core"`.
 
 ## Commands
 

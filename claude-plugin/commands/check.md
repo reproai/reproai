@@ -31,7 +31,7 @@ never execute the author's code.
    Install it, then run the command above:
 
    ```bash
-   python3 -m pip install -U "git+https://github.com/reproai/reproai#subdirectory=core"
+   python3 -m pip install -U reproai-prep
    ```
 
 3. Read the reports the engine wrote:

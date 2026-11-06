@@ -23,7 +23,7 @@ profile version. The `reproai check` summary line also prints `knowledge: engine
 ## Update to the latest
 
 reproai has **two parts**: the plugin *commands* (shipped through the Marketplace) and the Python
-*engine* that holds the rules and venue profiles (installed from this repo). The rules live in the
+*engine* that holds the rules and venue profiles (the `reproai-prep` package). The rules live in the
 engine, so updating the plugin alone does **not** refresh them — update both.
 
 First, the commands:
@@ -37,8 +37,19 @@ First, the commands:
 Then the engine, where the rules and venue profiles actually live:
 
 ```bash
-pip install -U "git+https://github.com/reproai/reproai#subdirectory=core"
+python3 -m pip install -U reproai-prep                                   # the stable release
 ```
+
+The development version, with the newest rules and venue profiles before they are released, comes from
+GitHub:
+
+```bash
+python3 -m pip install -U "git+https://github.com/reproai/reproai#subdirectory=core"  # development version
+```
+
+A development install keeps the last release's version number until the next release, so
+`python3 -m pip install -U reproai-prep` does not move it back; `python3 -m pip install --force-reinstall reproai-prep`
+does.
 
 Re-run a check and read `knowledge_versions` to confirm the new `rules_version` loaded.
 
