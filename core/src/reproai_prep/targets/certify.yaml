@@ -225,7 +225,7 @@ rules:
     kind: defect
     priority: P2
     certify_effect: warning
-    certify_basis: "rulebook settings.frozen_settings: LC_ALL=C.UTF-8; a package that read Latin-1 text in R without naming it was certified (October test bench)"
+    certify_basis: "rulebook settings.frozen_settings: LC_ALL=C.UTF-8; R reads such text on with the characters garbled, so the step does not stop"
     rule: "An R script should name the encoding of a text data file that is not UTF-8: the certified runs read text as UTF-8."
     detection: "A shipped .csv/.tsv/.txt file read by an R script is not valid UTF-8, and no fileEncoding=/encoding= appears in that script."
     languages: [r]
